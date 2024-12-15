@@ -1,0 +1,32 @@
+@using TrackerWasm.Models.ComicModels
+@inject HttpClient Http
+
+<div class="form-group">
+    <label for="ComicType">Comic Type</label>
+    <InputSelect id="ComicType" @bind-Value:get="Value" @bind-Value:set="OnValueChanged" class="form-select">
+        <option value="">-</option>
+        @foreach (var type in _data)
+        {
+            <option value="@type.Id">@type.Value</option>
+        }
+    </InputSelect>
+</div>
+
+@code {
+
+    [Parameter] public int? Value { get; set; }
+    [Parameter] public EventCallback<int?> ValueChanged { get; set; }
+
+    private List<ComicType> _data = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _data = await Http.GetFromJsonAsync<List<ComicType>>("api/ComicType") ?? [];
+    }
+
+    private async Task OnValueChanged(int? e)
+    {
+        await ValueChanged.InvokeAsync(e);
+    }
+
+}

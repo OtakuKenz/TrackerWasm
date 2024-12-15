@@ -1,0 +1,42 @@
+﻿@inherits LayoutComponentBase
+
+<BlazorBootstrapLayout StickyHeader="true">
+    <HeaderSection>
+        <ThemeSwitcher Class="ps-3 ps-lg-2" />
+    </HeaderSection>
+    <SidebarSection>
+        <Sidebar2 Href="/" ImageSrc="https://demos.blazorbootstrap.com/images/logo/logo-white.svg" Title="Tracker"
+                  BadgeText="0.1" DataProvider="Sidebar2DataProvider" WidthUnit="Unit.Px" />
+    </SidebarSection>
+
+    <ContentSection>
+        @Body
+    </ContentSection>
+</BlazorBootstrapLayout>
+<Preload LoadingText="Loading..." />
+<Toasts class="p-3" AutoHide="true" Delay="4000" Placement="ToastsPlacement.BottomRight" />
+<Modal IsServiceModal="true" />
+@code{
+
+    private IEnumerable<NavItem> _navItems = default!;
+
+    private async Task<Sidebar2DataProviderResult> Sidebar2DataProvider(Sidebar2DataProviderRequest request)
+    {
+        _navItems ??= GetNavItems();
+
+        return await Task.FromResult(request.ApplyTo(_navItems));
+    }
+
+    private IEnumerable<NavItem> GetNavItems()
+    {
+        _navItems = [
+            new() { Id = "1", Href = "/comic", IconName = IconName.Book, Text = "Comic"},
+            new() { Id = "2", Href = "/comic/home", IconName = IconName.HouseDoorFill, Text = "Home", ParentId="1"},
+            new() { Id= "3", Href="/comic/add", IconName=IconName.Plus, Text= "Add", ParentId="1"},
+            new() { Id= "4", Href="/comic/import", IconName=IconName.Upload, Text= "Import", ParentId="1"}
+        ];
+
+        return _navItems;
+    }
+
+}

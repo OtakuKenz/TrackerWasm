@@ -1,0 +1,78 @@
+@page "/comic/home"
+@using TrackerWasm.Models.ComicModels
+@using TrackerWasm.Components.ComicComponents
+
+<PageTitle>Webtoons & Manga</PageTitle>
+
+<h1>Webtoons & Manga</h1>
+
+<Button Color="ButtonColor.Primary" @onclick="Add">Add</Button>
+<Button Color="ButtonColor.Primary" @onclick="ToggleFilterAsync">Filter Setting</Button>
+<Button Color="ButtonColor.Primary" @onclick="ToggleContentAsync">Column Setting</Button>
+
+<Collapse @ref="_columnSetting">
+    <Card class="mt-2">
+        <CardBody>
+            <CardTitle>Display Columns:</CardTitle>
+            <CardText>
+                <Switch @bind-Value="_newValue.ReadStatus" Label="Read Status"></Switch>
+                <Switch @bind-Value="_newValue.Type" Label="Type"></Switch>
+                <Switch @bind-Value="_newValue.PublishingStatus" Label="Publishing Status"></Switch>
+                <Button Color="ButtonColor.Primary" Class="mt-2" @onclick="ApplySetting">Apply</Button>
+            </CardText>
+        </CardBody>
+    </Card>
+</Collapse>
+
+<Collapse @ref="_filterSetting">
+    <Card class="mt-2">
+        <CardBody>
+            <CardTitle>Filter Setting:</CardTitle>
+            <CardText>
+                <div class="vstack gap-3">
+                    <div class="form-group">
+                        <label for="Title">Title</label>
+                        <InputText id="Title" autocomplete="off" @bind-Value="_search.Title" class="form-control" />
+                    </div>
+                    
+                    <ComicTypeDropdown @bind-Value="_search.ComicTypeId"/>
+                    <PublishingStatusDropdown @bind-Value="_search.PublishingStatusId"/>
+                    <ReadStatusDropdown @bind-Value="_search.ReadStatusId"/>
+                    <div class="hstack gap-3">
+                        <Button Color="ButtonColor.Primary" @onclick="FilterTable">Filter</Button>
+                        <Button Color="ButtonColor.Secondary" @onclick="ClearFilterForm">Clear</Button>
+                    </div>
+                </div>
+            </CardText>
+        </CardBody>
+    </Card>
+</Collapse>
+
+
+<Grid TItem="Comic" Class="table table-hover" DataProvider="EmployeesDataProvider" AllowPaging="true" PageSize="5"
+    @ref="_grid" Responsive="true">
+    <GridColumns>
+        <GridColumn TItem="Comic" HeaderText="Title" PropertyName="Title" FilterButtonCSSClass="d-none"
+            FilterOperator="FilterOperator.Contains" Filter>
+            @context.Title
+        </GridColumn>
+        <GridColumn TItem="Comic" HeaderText="Read Status" Class="@(_columnsToDisplay.ReadStatus? "text-end w-auto":"d-none")"
+            PropertyName="Value">
+            @context.ReadStatus?.Value
+        </GridColumn>
+        <GridColumn TItem="Comic" HeaderText="Type" Class="@(_columnsToDisplay.Type? "text-end w-auto":"d-none")">
+            @context.ComicType?.Value
+        </GridColumn>
+        <GridColumn TItem="Comic" HeaderText="Read" Filterable="false" Class="text-end w-auto">
+            @(context.ChapterRead.HasValue ? context.ChapterRead.ToString() : "?")/@(context.TotalChapter.HasValue ?
+            context.TotalChapter.ToString() : "?")
+        </GridColumn>
+        <GridColumn TItem="Comic" HeaderText="Publishing Status"
+            Class="@(_columnsToDisplay.PublishingStatus? "text-end w-auto":"d-none")">
+            @context.PublishingStatus?.Value
+        </GridColumn>
+        <GridColumn TItem="Comic" Filterable="false" Class="text-end w-auto">
+            <Button Color="ButtonColor.Link" @onclick="() => Edit(context.Id)">Edit</Button>
+        </GridColumn>
+    </GridColumns>
+</Grid>
