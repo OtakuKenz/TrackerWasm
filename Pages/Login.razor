@@ -1,0 +1,28 @@
+@page "/login"
+@using TrackerWasm.Services
+@inject FirebaseAuthService AuthService
+
+<h3>Login</h3>
+
+<input @bind="email" placeholder="Email" />
+<input @bind="password" type="password" placeholder="Password" />
+<button @onclick="SignIn">Sign In</button>
+
+@code {
+    private string email;
+    private string password;
+
+    private async Task SignIn()
+    {
+        try
+        {
+            var idToken = await AuthService.SignInAsync(email, password);
+            Console.WriteLine($"Signed in! ID Token: {idToken}");
+            // Store or use the ID token as needed
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Sign-in failed: {ex.Message}");
+        }
+    }
+}

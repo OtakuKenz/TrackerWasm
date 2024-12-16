@@ -1,31 +1,31 @@
-@using TrackerWasm.Models.ComicModels
+@using TrackerWasm.Components.SharedComponents
+@using TrackerWasm.Services
 @inject HttpClient Http
+@inject ComicService ComicService
 
-<div class="form-group">
-    <label for="ComicType">Read Status</label>
-    <InputSelect id="ComicType"  @bind-Value:get="Value" @bind-Value:set="OnValueChanged" class="form-select">
-        <option value="">-</option>
-        @foreach (var type in _data)
-        {
-            <option value="@type.Id">@type.Value</option>
-        }
-    </InputSelect>
-</div>
+<DropdownComponent Data="@_data" IsLoading="@_isLoading" Label="@_label" @bind-Value:get="@Value"
+                   @bind-Value:set="OnValueChanged"/>
 
 @code {
 
-    [Parameter] public int? Value { get; set; }
-    [Parameter] public EventCallback<int?> ValueChanged { get; set; }
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public EventCallback<bool> DataLoaded { get; set; }
+    private bool _isLoading = true;
+    private string _label = "Read Status";
 
-    private List<ComicType> _data = [];
+    private List<string> _data = [];
 
     protected override async Task OnInitializedAsync()
     {
-        _data = await Http.GetFromJsonAsync<List<ComicType>>("api/ReadStatus") ?? [];
+        _data = await ComicService.GetReadingStatusList();
+        await DataLoaded.InvokeAsync(true);
+        _isLoading = false;
     }
 
-    private async Task OnValueChanged(int? e)
+    private async Task OnValueChanged(string? e)
     {
         await ValueChanged.InvokeAsync(e);
     }
+
 }

@@ -1,82 +1,139 @@
 @page "/comic/import"
+@using System.Text.Json
+@using TrackerWasm.Components.SharedComponents
+@using TrackerWasm.Models
+@using TrackerWasm.Services
+@inject ToastService ToastService
+@inject PreloadService PreloadService
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+@inject ComicService ComicService
 
 <PageTitle>Import Comics</PageTitle>
 
 <h1>Import Comics</h1>
 
-<InputFile OnChange="HandleFileSelected" />
-@if (jsonProperties.Count > 0)
+<InputFile OnChange="HandleFileSelected"/>
+@if (_jsonProperties.Count > 0)
 {
     <h5 class="mt-4">Map JSON Properties</h5>
-    <EditForm Model="jsonMapping" FormName="jsonMapping" OnValidSubmit="ProcessJson">
-        <DataAnnotationsValidator />
+    <EditForm Model="_jsonMapping" FormName="jsonMapping" OnValidSubmit="ProcessJson">
+        <DataAnnotationsValidator/>
+        <ValidationSummary></ValidationSummary>
         <div class="vstack gap-3">
-            <div class="form-group">
-                <label>Title</label>
-                <InputSelect class="form-select" @bind-Value="jsonMapping.Title">
-                    <option value="">-- Select JSON Field--</option>
-                    @foreach (var jsonProperty in jsonProperties)
-                    {
-                        <option value="@jsonProperty">@jsonProperty</option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="@(()=>jsonMapping.Title)" />
-            </div>
-            <div class="form-group">
-                <label>Comics Type</label>
-                <InputSelect class="form-select" @bind-Value="jsonMapping.ComicType">
-                    <option value="">-- Select JSON Field--</option>
-                    @foreach (var jsonProperty in jsonProperties)
-                    {
-                        <option value="@jsonProperty">@jsonProperty</option>
-                    }
-                </InputSelect>
-            </div>
-
-            <div class="form-group">
-                <label>Publishing Status</label>
-                <InputSelect class="form-select" @bind-Value="jsonMapping.PublishingStatus">
-                    <option value="">-- Select JSON Field--</option>
-                    @foreach (var jsonProperty in jsonProperties)
-                    {
-                        <option value="@jsonProperty">@jsonProperty</option>
-                    }
-                </InputSelect>
-            </div>
-
-            <div class="form-group">
-                <label>Read Status</label>
-                <InputSelect class="form-select" @bind-Value="jsonMapping.ReadStatus">
-                    <option value="">-- Select JSON Field--</option>
-                    @foreach (var jsonProperty in jsonProperties)
-                    {
-                        <option value="@jsonProperty">@jsonProperty</option>
-                    }
-                </InputSelect>
-            </div>
-
-            <div class="form-group">
-                <label>Chapter Read</label>
-                <InputSelect class="form-select" @bind-Value="jsonMapping.ChapterRead">
-                    <option value="">-- Select JSON Field--</option>
-                    @foreach (var jsonProperty in jsonProperties)
-                    {
-                        <option value="@jsonProperty">@jsonProperty</option>
-                    }
-                </InputSelect>
-            </div>
-
-            <div class="form-group">
-                <label>Total Chapter</label>
-                <InputSelect class="form-select" @bind-Value="jsonMapping.TotalChapter">
-                    <option value="">-- Select JSON Field--</option>
-                    @foreach (var jsonProperty in jsonProperties)
-                    {
-                        <option value="@jsonProperty">@jsonProperty</option>
-                    }
-                </InputSelect>
-            </div>
+            <DropdownComponent Label="Title" Data="_jsonProperties" @bind-Value="@_jsonMapping.Title"/>
+            <DropdownComponent Label="Comic Type" Data="_jsonProperties" @bind-Value="@_jsonMapping.ComicType"/>
+            <DropdownComponent Label="Publishing Status" Data="_jsonProperties"
+                               @bind-Value="@_jsonMapping.PublishingStatus"/>
+            <DropdownComponent Label="Read Status" Data="_jsonProperties" @bind-Value="@_jsonMapping.ReadStatus"/>
+            <DropdownComponent Label="Chapter Read" Data="_jsonProperties" @bind-Value="@_jsonMapping.ChapterRead"/>
+            <DropdownComponent Label="Total Chapter" Data="_jsonProperties" @bind-Value="@_jsonMapping.TotalChapter"/>
         </div>
         <Button Color="ButtonColor.Primary" class="mt-3" Type="ButtonType.Submit">Process and Save</Button>
     </EditForm>
+}
+
+@code {
+
+    private readonly List<string> _jsonProperties = []; // List of JSON properties
+
+    private readonly ImportJsonMapping _jsonMapping = new();
+
+    private JsonDocument? _jsonDocument;
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        {
+            await using var stream = file.OpenReadStream();
+            using var reader = new StreamReader(stream);
+            // Read the content of the file
+            var jsonContent = await reader.ReadToEndAsync();
+
+            try
+            {
+                _jsonDocument = JsonDocument.Parse(jsonContent);
+                var root = _jsonDocument.RootElement;
+                var firstElement = _jsonDocument.RootElement.EnumerateArray().First();
+                foreach (var property in firstElement.EnumerateObject())
+                {
+                    _jsonProperties.Add(property.Name);
+                }
+            }
+            catch (JsonException ex)
+            {
+                ToastService.Notify(new ToastMessage(ToastType.Danger, $"Invalid JSON format: {ex.Message}"));
+            }
+        }
+    }
+
+    private async Task ProcessJson()
+    {
+        PreloadService.Show();
+
+        if (_jsonDocument == null || string.IsNullOrWhiteSpace(_jsonMapping.Title))
+        {
+            PreloadService.Hide();
+            return;
+        }
+
+        try
+        {
+            _jsonMapping.JsonDocument = _jsonDocument;
+            var result = await ComicService.ImportComic(_jsonMapping);
+
+            PreloadService.Hide();
+            if (result is { Saved: 0, Failed: > 0 })
+            {
+                ToastService.Notify(new ToastMessage(ToastType.Danger, $"Failed to import all {result.Failed}."));
+            }
+            else switch (result)
+            {
+                case { Failed: > 0, Saved: > 0 }:
+                    ToastService.Notify(
+                        new ToastMessage(
+                            ToastType.Warning,
+                            $"{result.Saved} records imported. {result.Failed} not imported."
+                        )
+                    );
+                    break;
+                case { Failed: 0, Saved: > 0 }:
+                    ToastService.Notify(new ToastMessage(ToastType.Success, $"{result.Saved} records imported."));
+                    break;
+            }
+
+            if (result.Duplicate > 0)
+            {
+                var message = "All records are duplicate. Nothing to import.";
+                if (result.Saved > 0 || result.Failed > 0)
+                {
+                    message = $"{result.Duplicate} {(result.Duplicate > 1 ? "duplicates" : "duplicate")} skipped.";
+                }
+
+                ToastService.Notify(
+                    new ToastMessage(
+                        ToastType.Info,
+                        message
+                    )
+                );
+            }
+
+            if (result.Saved > 0)
+            {
+                NavigationManager.NavigateTo("/comic/home");
+            }
+        }
+        catch (Exception e)
+        {
+            PreloadService.Hide();
+            ToastService.Notify(
+                new ToastMessage(
+                    ToastType.Danger,
+                    $"Failed to import."
+                ));
+            Console.WriteLine(e.Message);
+            Console.WriteLine(e.StackTrace);
+        }
+    }
+
 }
