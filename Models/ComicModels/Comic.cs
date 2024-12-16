@@ -5,8 +5,7 @@ namespace TrackerWasm.Models.ComicModels;
 
 public class Comic
 {
-    [Key]
-    public int Id { get; set; }
+    public string Id { get; set; } = "";
 
     [Required]
     public string Title { get; set; } = "";
@@ -17,17 +16,11 @@ public class Comic
     [Range(1, int.MaxValue, ErrorMessage = "Total chapter should be greater than 0.")]
     public int? TotalChapter { get; set; }
 
-    [ForeignKey(nameof(PublishingStatus))]
-    public int? PublishingStatusId { get; set; }
+    public string? PublishingStatus { get; set; }
 
-    public virtual PublishingStatus? PublishingStatus { get; set; }
 
-    [ForeignKey(nameof(ReadStatus))]
-    public int? ReadStatusId { get; set; }
+    public string? ReadStatus { get; set; }
 
-    public virtual ReadStatus? ReadStatus { get; set; }
 
-    [ForeignKey(nameof(ComicType))]
-    public int? ComicTypeId { get; set; }
-    public virtual ComicType? ComicType { get; set; }
+    public string? ComicType { get; set; }
 }
