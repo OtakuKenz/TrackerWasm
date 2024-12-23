@@ -24,17 +24,17 @@ main[b-ver6kot3ce] {
     align-items: center;
 }
 
-.top-row[b-ver6kot3ce] a, .top-row[b-ver6kot3ce] .btn-link {
+.top-row[b-ver6kot3ce]  a, .top-row[b-ver6kot3ce]  .btn-link {
     white-space: nowrap;
     margin-left: 1.5rem;
     text-decoration: none;
 }
 
-.top-row[b-ver6kot3ce] a:hover, .top-row[b-ver6kot3ce] .btn-link:hover {
+.top-row[b-ver6kot3ce]  a:hover, .top-row[b-ver6kot3ce]  .btn-link:hover {
     text-decoration: underline;
 }
 
-.top-row[b-ver6kot3ce] a:first-child {
+.top-row[b-ver6kot3ce]  a:first-child {
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -44,7 +44,7 @@ main[b-ver6kot3ce] {
         justify-content: space-between;
     }
 
-    .top-row[b-ver6kot3ce] a, .top-row[b-ver6kot3ce] .btn-link {
+    .top-row[b-ver6kot3ce]  a, .top-row[b-ver6kot3ce]  .btn-link {
         margin-left: 0;
     }
 }
@@ -67,7 +67,7 @@ main[b-ver6kot3ce] {
         z-index: 1;
     }
 
-    .top-row.auth[b-ver6kot3ce] a:first-child {
+    .top-row.auth[b-ver6kot3ce]  a:first-child {
         flex: 1;
         text-align: right;
         width: 0;
@@ -78,7 +78,6 @@ main[b-ver6kot3ce] {
         padding-right: 1.5rem !important;
     }
 }
-
 /* /Layout/NavMenu.razor.rz.scp.css */
 .navbar-toggler[b-jz6ljjgtnh] {
     background-color: rgba(255, 255, 255, 0.1);
@@ -128,7 +127,7 @@ main[b-ver6kot3ce] {
     padding-bottom: 1rem;
 }
 
-.nav-item[b-jz6ljjgtnh] a {
+.nav-item[b-jz6ljjgtnh]  a {
     color: #d7d7d7;
     border-radius: 4px;
     height: 3rem;
@@ -137,12 +136,12 @@ main[b-ver6kot3ce] {
     line-height: 3rem;
 }
 
-.nav-item[b-jz6ljjgtnh] a.active {
+.nav-item[b-jz6ljjgtnh]  a.active {
     background-color: rgba(255, 255, 255, 0.37);
     color: white;
 }
 
-.nav-item[b-jz6ljjgtnh] a:hover {
+.nav-item[b-jz6ljjgtnh]  a:hover {
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
 }
