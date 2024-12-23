@@ -22,38 +22,38 @@
 @code {
 
     /// <summary>
-    /// Selected value
+    ///     Selected value
     /// </summary>
     [Parameter]
     public string? Value { get; set; } = "";
 
     /// <summary>
-    /// Selection has changed
+    ///     Selection has changed
     /// </summary>
     [Parameter]
     public EventCallback<string?> ValueChanged { get; set; }
 
     /// <summary>
-    /// Display spinner icon and hide Dropdown
+    ///     Display spinner icon and hide Dropdown
     /// </summary>
     [Parameter]
     public bool IsLoading { get; set; } = false;
 
     /// <summary>
-    /// Data for the Dropdown
+    ///     Data for the Dropdown
     /// </summary>
     [Parameter]
     public List<string> Data { get; set; } = [];
 
     /// <summary>
-    /// Label for the dropdown.
-    /// This will also be used as default empty selection text.
+    ///     Label for the dropdown.
+    ///     This will also be used as default empty selection text.
     /// </summary>
     [Parameter]
     public required string Label { get; set; }
 
     /// <summary>
-    /// Setting a value will override the default empty selection text.
+    ///     Setting a value will override the default empty selection text.
     /// </summary>
     [Parameter]
     public string EmptySelectionText { get; set; } = "-";

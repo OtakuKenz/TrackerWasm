@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using TrackerWasm.Models;
 using TrackerWasm.Models.ComicModels;
 
 namespace TrackerWasm.Services;
@@ -23,7 +24,6 @@ public static class FirestoreDataService
                 }
             };
             var json = JsonSerializer.Serialize(payload);
-            Console.WriteLine(json);
             return new StringContent(json, Encoding.UTF8, "application/json");
         }
 
@@ -41,9 +41,7 @@ public static class FirestoreDataService
             if (!jsonElement.TryGetProperty("fields", out var fields)) return new Comic();
 
             if (fields.TryGetProperty("title", out var title))
-            {
                 comic.Title = title.GetProperty("stringValue").GetString() ?? string.Empty;
-            }
 
             if (fields.TryGetProperty("chapterRead", out var chapterRead))
             {
@@ -60,20 +58,14 @@ public static class FirestoreDataService
             }
 
             if (fields.TryGetProperty("publishingStatus", out var publishingStatus))
-            {
                 comic.PublishingStatus = publishingStatus.GetProperty("stringValue").GetString();
-            }
 
             if (fields.TryGetProperty("readStatus", out var readStatus))
-            {
                 comic.ReadStatus = readStatus.GetProperty("stringValue").GetString();
-            }
 
             if (fields.TryGetProperty("comicType", out var comicType))
-            {
                 comic.ComicType = comicType.GetProperty("stringValue").GetString();
-            }
-            
+
             return comic;
         }
 
@@ -83,6 +75,25 @@ public static class FirestoreDataService
             if (!jsonElement.TryGetProperty("documents", out var documents)) return [];
             comics.AddRange(documents.EnumerateArray().Select(DeserializeComic));
             return comics;
+        }
+    }
+
+    public static class UserService
+    {
+        public static StringContent SerializeUser(User user)
+        {
+            var payload = new
+            {
+                fields = new
+                {
+                    userId = new { stringValue = user.UserId },
+                    username = new { stringValue = user.Username },
+                    password = new { stringValue = user.HashedPassword },
+                    displayName = new { stringValue = user.DisplayName }
+                }
+            };
+            var json = JsonSerializer.Serialize(payload);
+            return new StringContent(json, Encoding.UTF8, "application/json");
         }
     }
 }

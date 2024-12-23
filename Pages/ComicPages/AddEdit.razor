@@ -1,6 +1,8 @@
 @page "/comic/add"
 @page "/comic/edit/{ComicId}"
+@using Microsoft.AspNetCore.Authorization
 @using TrackerWasm.Components.ComicComponents
+@using TrackerWasm.Components.SharedComponents
 @using TrackerWasm.Models.ComicModels
 @using TrackerWasm.Services
 @inject NavigationManager NavigationManager
@@ -8,6 +10,7 @@
 @inject ToastService ToastService
 @inject ComicService ComicService
 
+@attribute [Authorize]
 
 <PageTitle>@(ComicId == null ? "Add Comic" : "Edit Comic")</PageTitle>
 
@@ -18,7 +21,7 @@
 
     <div class="vstack gap-3">
         <div class="form-group">
-            <label for="Title">Title</label>
+            <DisplayLabel For="@(() => _comic.Title)"/>
             <InputText id="Title" autocomplete="off" @bind-Value="_comic.Title" class="form-control"/>
             <ValidationMessage For="@(() => _comic.Title)"/>
         </div>
@@ -31,13 +34,13 @@
         <ReadStatusDropdown @bind-Value="_comic.ReadStatus" DataLoaded="@(b => _isReadStatusLoaded = b)"/>
 
         <div class="form-group">
-            <label for="ChapterRead">Chapter Read</label>
+            <DisplayLabel For="@(() => _comic.ChapterRead)"/>
             <InputNumber id="ChapterRead" autocomplete="off" @bind-Value="_comic.ChapterRead" class="form-control"/>
             <ValidationMessage For="@(() => _comic.ChapterRead)"/>
         </div>
 
         <div class="form-group">
-            <label for="TotalChapter">Total Chapters</label>
+            <DisplayLabel For="@(() => _comic.TotalChapter)"/>
             <InputNumber id="TotalChapter" autocomplete="off" @bind-Value="_comic.TotalChapter" class="form-control"/>
             <ValidationMessage For="@(() => _comic.TotalChapter)"/>
         </div>
@@ -93,7 +96,7 @@
             catch (HttpRequestException)
             {
                 ToastService.Notify(new ToastMessage(ToastType.Danger, "Failed to retrieve Comic detail."));
-                NavigationManager.NavigateTo($"/comic/home");
+                NavigationManager.NavigateTo("/comic/home");
             }
         }
 
@@ -105,13 +108,14 @@
         var isSuccess = false;
         var isDuplicate = false;
         PreloadService.Show(loadingText: "Saving comic...");
-        if (ComicId != null & _originalTitle != _comic.Title || ComicId == null)
+        if ((ComicId != null) & (_originalTitle != _comic.Title) || ComicId == null)
         {
             if (await ComicService.IsComicTitleDuplicate(_comic.Title))
             {
                 isDuplicate = true;
             }
         }
+
         if (!isDuplicate)
         {
             if (ComicId == null)
@@ -153,8 +157,8 @@
     private async Task ShowConfirmationAsync()
     {
         var confirmation = await _deleteDialog.ShowAsync(
-            title: "Are you sure you want to delete this?",
-            message1: $"Title: {_comic.Title}"
+            "Are you sure you want to delete this?",
+            $"Title: {_comic.Title}"
         );
         if (confirmation)
         {

@@ -1,28 +1,78 @@
 @page "/login"
+@using TrackerWasm.AuthProvider
+@using TrackerWasm.Components.SharedComponents
 @using TrackerWasm.Services
-@inject FirebaseAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject PreloadService PreloadService
+@inject UserService UserService
+@inject ToastService ToastService
+@inject CustomAuthStateProvider AuthenticationStateProvider
 
-<h3>Login</h3>
+<PageTitle>Login</PageTitle>
 
-<input @bind="email" placeholder="Email" />
-<input @bind="password" type="password" placeholder="Password" />
-<button @onclick="SignIn">Sign In</button>
+<Card Style="width:30rem;" Class="mx-auto">
+    <CardBody>
+        <EditForm Model="@_user" OnValidSubmit="HandleValidSubmit" FormName="user-registration">
+            <DataAnnotationsValidator/>
+            <div class="vstack gap-3">
+                <h1>Tracker</h1>
+                <div class="form-group">
+                    <DisplayLabel For="@(() => _user.Username)"/>
+                    <InputText id="Username" autocomplete="off" @bind-Value="_user.Username" class="form-control"/>
+                    <ValidationMessage For="@(() => _user.Username)"/>
+                </div>
+
+                <div class="form-group">
+                    <DisplayLabel For="@(() => _user.Password)"/>
+                    <InputText type="password" id="Password" autocomplete="off" @bind-Value="_user.Password"
+                               class="form-control"/>
+                    <ValidationMessage For="@(() => _user.Password)"/>
+                </div>
+
+                <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Login</Button>
+                <Button Color="ButtonColor.Link" @onclick="Register">Register</Button>
+
+            </div>
+
+        </EditForm>
+    </CardBody>
+</Card>
 
 @code {
-    private string email;
-    private string password;
+    private readonly ViewModels.Login _user = new();
 
-    private async Task SignIn()
+    protected override async Task OnInitializedAsync()
     {
-        try
+        if (await UserService.IsUserLoggedIn())
         {
-            var idToken = await AuthService.SignInAsync(email, password);
-            Console.WriteLine($"Signed in! ID Token: {idToken}");
-            // Store or use the ID token as needed
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Sign-in failed: {ex.Message}");
+            NavigationManager.NavigateTo("comic/home");
         }
     }
+
+    private async Task HandleValidSubmit()
+    {
+        PreloadService.Show(loadingText: "Logging in...");
+        var result = await UserService.AuthenticateUser(_user);
+        if (result)
+        {
+            await AuthenticationStateProvider.MarkUserAsAuthenticated();
+            PreloadService.Hide();
+            ToastService.Notify(new ToastMessage(ToastType.Success,
+                $"Welcome back {await UserService.GetDiplayName()}"));
+            // NavigationManager.NavigateTo("comic/home");
+            NavigationManager.NavigateTo("forcerefresh", true);
+        }
+        else
+        {
+            ToastService.Notify(new ToastMessage(ToastType.Warning,
+                "Invalid credentials"));
+            PreloadService.Hide();
+        }
+    }
+
+    private void Register()
+    {
+        NavigationManager.NavigateTo("/user/register");
+    }
+
 }

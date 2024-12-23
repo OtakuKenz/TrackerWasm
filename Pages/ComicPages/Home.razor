@@ -1,10 +1,15 @@
 @page "/comic/home"
-@using TrackerWasm.Models.ComicModels
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
 @using TrackerWasm.Components.ComicComponents
+@using TrackerWasm.Components.SharedComponents
+@using TrackerWasm.Models.ComicModels
 @using TrackerWasm.Services
 @inject NavigationManager NavigationManager
 @inject PreloadService PreloadService
 @inject ComicService ComicService
+
+@attribute [Authorize]
 
 <PageTitle>Webtoons & Manga</PageTitle>
 
@@ -18,12 +23,23 @@
     <Card class="mt-2">
         <CardBody>
             <CardTitle>Display Columns:</CardTitle>
-            <CardText>
-                <Switch @bind-Value="_newValue.ReadStatus" Label="Read Status"></Switch>
-                <Switch @bind-Value="_newValue.Type" Label="Type"></Switch>
-                <Switch @bind-Value="_newValue.PublishingStatus" Label="Publishing Status"></Switch>
-                <Button Color="ButtonColor.Primary" Class="mt-2" @onclick="ApplySetting">Apply</Button>
-            </CardText>
+            <CardBody>
+                <EditForm Model="@_newValue" FormName="columnSetting" OnValidSubmit="ApplySetting">
+                    <DataAnnotationsValidator/>
+                    <div class="vstack gap-3">
+                        <SwitchInput For="()=>_newValue.ReadStatus" @bind-Value="@_newValue.ReadStatus"></SwitchInput>
+                        <SwitchInput For="()=>_newValue.Type" @bind-Value="@_newValue.Type"></SwitchInput>
+                        <SwitchInput For="()=>_newValue.PublishingStatus"
+                                     @bind-Value="@_newValue.PublishingStatus"></SwitchInput>
+                        <div class="form-group">
+                            <DisplayLabel For="@(() => _newValue.PageSize)"></DisplayLabel>
+                            <NumberInput TValue="int" @bind-Value="@_newValue.PageSize" Placeholder="Items per page"/>
+                            <ValidationMessage For="@(() => _newValue.PageSize)"/>
+                        </div>
+                        <Button Color="ButtonColor.Primary" Class="mt-2" Type="ButtonType.Submit">Apply</Button>
+                    </div>
+                </EditForm>
+            </CardBody>
         </CardBody>
     </Card>
 </Collapse>
@@ -32,7 +48,7 @@
     <Card class="mt-2">
         <CardBody>
             <CardTitle>Filter Setting:</CardTitle>
-            <CardText>
+            <CardBody>
                 <div class="vstack gap-3">
                     <div class="form-group">
                         <label for="Title">Title</label>
@@ -47,13 +63,14 @@
                         <Button Color="ButtonColor.Secondary" @onclick="ClearFilterForm">Clear</Button>
                     </div>
                 </div>
-            </CardText>
+            </CardBody>
         </CardBody>
     </Card>
 </Collapse>
 
 
-<Grid TItem="Comic" Class="table table-hover" DataProvider="EmployeesDataProvider" AllowPaging="true" PageSize="5"
+<Grid TItem="Comic" Class="table table-hover mt-2" DataProvider="EmployeesDataProvider" AllowPaging="true"
+      PageSize="@_tableSetting.PageSize"
       @ref="_grid" Responsive="true">
     <GridColumns>
         <GridColumn TItem="Comic" HeaderText="Title" PropertyName="Title" FilterButtonCSSClass="d-none"
@@ -61,18 +78,18 @@
             @context.Title
         </GridColumn>
         <GridColumn TItem="Comic" HeaderText="Read Status"
-                    Class="@(_columnsToDisplay.ReadStatus ? "text-end w-auto" : "d-none")"
+                    Class="@(_tableSetting.ReadStatus ? "text-end w-auto" : "d-none")"
                     PropertyName="Value">
             @context.ReadStatus
         </GridColumn>
-        <GridColumn TItem="Comic" HeaderText="Type" Class="@(_columnsToDisplay.Type ? "text-end w-auto" : "d-none")">
+        <GridColumn TItem="Comic" HeaderText="Type" Class="@(_tableSetting.Type ? "text-end w-auto" : "d-none")">
             @context.ComicType
         </GridColumn>
         <GridColumn TItem="Comic" HeaderText="Read" Filterable="false" Class="text-end w-auto">
             @(context.ChapterRead.HasValue ? context.ChapterRead.ToString() : "?")/@(context.TotalChapter.HasValue ? context.TotalChapter.ToString() : "?")
         </GridColumn>
         <GridColumn TItem="Comic" HeaderText="Publishing Status"
-                    Class="@(_columnsToDisplay.PublishingStatus ? "text-end w-auto" : "d-none")">
+                    Class="@(_tableSetting.PublishingStatus ? "text-end w-auto" : "d-none")">
             @context.PublishingStatus
         </GridColumn>
         <GridColumn TItem="Comic" Filterable="false" Class="text-end w-auto">
@@ -84,22 +101,29 @@
 @code {
     private List<Comic> _comics = [];
 
-    private ColumnsToDisplay _columnsToDisplay = new();
-    private ColumnsToDisplay _newValue = new();
+    private bool _gridDataLoaded;
+
+    private TableSetting _tableSetting = new();
+    private TableSetting _newValue = new();
 
     private Collapse _columnSetting = default!;
 
     private Collapse _filterSetting = default!;
 
     private Grid<Comic> _grid = default!;
+    private List<Comic> data = [];
 
     private Comic _search = new();
 
-    private class ColumnsToDisplay
+    private class TableSetting
     {
-        public bool ReadStatus { get; set; } = false;
-        public bool Type { get; set; } = false;
-        public bool PublishingStatus { get; set; } = false;
+        [Display(Name = "Read status")] public bool ReadStatus { get; set; }
+        [Display(Name = "Type")] public bool Type { get; set; }
+        [Display(Name = "Publishing status")] public bool PublishingStatus { get; set; }
+
+        [Display(Name = "Page size")]
+        [Range(5, int.MaxValue, ErrorMessage = "Page size should be minimum of 5")]
+        public int PageSize { get; set; } = 5;
     }
 
     private void Add()
@@ -117,8 +141,12 @@
     private async Task<GridDataProviderResult<Comic>> EmployeesDataProvider(GridDataProviderRequest<Comic> request)
     {
         PreloadService.Show();
-        var data = await ComicService.GetComicList(_search);
-        // var data = await ComicService.GetComicList();
+        if (!_gridDataLoaded)
+        {
+            data = await ComicService.GetComicList(_search);
+            _gridDataLoaded = true;
+        }
+
         PreloadService.Hide();
         return await Task.FromResult(request.ApplyTo(data));
     }
@@ -126,25 +154,30 @@
     private async Task ApplySetting()
     {
         _readStatusDisplayed = _newValue.ReadStatus ? "" : "d-none";
-        _columnsToDisplay = new ColumnsToDisplay
+        _tableSetting = new TableSetting
         {
             ReadStatus = _newValue.ReadStatus,
             Type = _newValue.Type,
             PublishingStatus = _newValue.PublishingStatus,
+            PageSize = _newValue.PageSize
         };
+        Console.WriteLine($"Read status old value: {_tableSetting.ReadStatus}");
+        Console.WriteLine($"Read status new value: {_newValue.ReadStatus}");
         PreloadService.Show(SpinnerColor.Light, "Updating Table...");
         await Task.Delay(200);
         StateHasChanged();
+        await _columnSetting.ToggleAsync();
         PreloadService.Hide();
     }
 
     private async Task ToggleContentAsync()
     {
-        _newValue = new ColumnsToDisplay
+        _newValue = new TableSetting
         {
-            ReadStatus = _columnsToDisplay.ReadStatus,
-            Type = _columnsToDisplay.Type,
-            PublishingStatus = _columnsToDisplay.PublishingStatus,
+            ReadStatus = _tableSetting.ReadStatus,
+            Type = _tableSetting.Type,
+            PublishingStatus = _tableSetting.PublishingStatus,
+            PageSize = _newValue.PageSize
         };
         await _columnSetting.ToggleAsync();
     }
@@ -157,14 +190,15 @@
     private async Task FilterTable()
     {
         PreloadService.Show(SpinnerColor.Light, "Filtering data...");
-        // await LoadComicData(search);
+        _gridDataLoaded = false;
         await _grid.RefreshDataAsync();
+        await _filterSetting.ToggleAsync();
         PreloadService.Hide();
     }
 
     private async Task ClearFilterForm()
     {
-        _search = new();
+        _search = new Comic();
         await FilterTable();
     }
 
