@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Publish TrackerWasm to folder" type="DotNetFolderPublish" factoryName="Publish to folder">
+    <riderPublish configuration="Release" delete_existing_files="true" platform="Any CPU" self_contained="true" target_folder="$PROJECT_DIR$/bin/Release/net8.0/publish" target_framework="net8.0" uuid_high="11500212899171366" uuid_low="-5304382767176370237" />
+    <method v="2" />
+  </configuration>
+</component>

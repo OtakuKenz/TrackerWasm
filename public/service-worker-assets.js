@@ -29,10 +29,6 @@
       "url": "manifest.webmanifest"
     },
     {
-      "hash": "sha256-paIeuWnSzjeLGITWkk4p3rcejUsZWCJGPeOK9UhWXtg=",
-      "url": "sample-data\/weather.json"
-    },
-    {
       "hash": "sha256-gvHfnndfEu1tRf0rFb5988rWq7ITIotOaE8+AMbKYbc=",
       "url": "_framework\/blazor.webassembly.js"
     },
@@ -65,7 +61,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-Z8GWABOAwcUOxs3quoDW8hPrbXLWjiO\/vJjwm1AicW4=",
+      "hash": "sha256-6EtKWHs8W3XORvU4CWfbplu4sCW0wq4KLtviokjwV7Y=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -845,7 +841,7 @@
       "url": "_framework\/System.Xml.XPath.XDocument.wasm"
     },
     {
-      "hash": "sha256-ZOdPRMKxr9m9buDk5tD8l9JzvWtTmt+3ZN5O64QBXxs=",
+      "hash": "sha256-bIMYezA+y5EgiUmH8eIM3XstyNWtLrCPGFYnLpUXFjQ=",
       "url": "_framework\/TrackerWasm.wasm"
     },
     {
@@ -897,5 +893,5 @@
       "url": "_content\/Microsoft.AspNetCore.Components.WebAssembly.Authentication\/AuthenticationService.js"
     }
   ],
-  "version": "p9xR2gTf"
+  "version": "Ngzi21zL"
 };
