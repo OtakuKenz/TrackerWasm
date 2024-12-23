@@ -1,0 +1,13 @@
+@inherits LayoutComponentBase
+
+<BlazorBootstrapLayout StickyHeader="true">
+    <HeaderSection>
+        <ThemeSwitcher Class="ps-3 ps-lg-2"/>
+    </HeaderSection>
+    <ContentSection>
+        @Body
+    </ContentSection>
+</BlazorBootstrapLayout>
+
+<Preload LoadingText="Loading..."/>
+<Toasts class="p-3" AutoHide="true" Delay="4000" Placement="ToastsPlacement.BottomRight"/>

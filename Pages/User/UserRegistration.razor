@@ -1,0 +1,75 @@
+@page "/user/register"
+@using TrackerWasm.Components.SharedComponents
+@using TrackerWasm.Models
+@using TrackerWasm.Services
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+@inject PreloadService PreloadService
+@inject ToastService ToastService
+
+<PageTitle>Register</PageTitle>
+
+<Card Style="width:30rem;" Class="mx-auto">
+    <CardBody>
+        <EditForm Model="@_user" OnValidSubmit="HandleValidSubmit" FormName="user-registration">
+            <DataAnnotationsValidator/>
+            <div class="vstack gap-3">
+                <h1>Register</h1>
+                <div class="form-group">
+                    <DisplayLabel For="@(() => _user.Username)"/>
+                    <InputText id="Username" autocomplete="off" @bind-Value="_user.Username" class="form-control"/>
+                    <ValidationMessage For="@(() => _user.Username)"/>
+                </div>
+                <div class="form-group">
+                    <DisplayLabel For="@(() => _user.DisplayName)"/>
+                    <InputText id="DisplayName" autocomplete="off" @bind-Value="_user.DisplayName"
+                               class="form-control"/>
+                    <ValidationMessage For="@(() => _user.DisplayName)"/>
+                </div>
+
+                <div class="form-group">
+                    <DisplayLabel For="@(() => _user.Password)"/>
+                    <InputText type="password" id="Password" autocomplete="off" @bind-Value="_user.Password"
+                               class="form-control"/>
+                    <ValidationMessage For="@(() => _user.Password)"/>
+                </div>
+                <div class="form-group">
+                    <DisplayLabel For="@(() => _user.PasswordConfirmation)"/>
+                    <InputText type="password" id="PasswordConfirmation" autocomplete="off"
+                               @bind-Value="_user.PasswordConfirmation"
+                               class="form-control"/>
+                    <ValidationMessage For="@(() => _user.PasswordConfirmation)"/>
+                </div>
+
+                <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Register</Button>
+
+                <Button Color="ButtonColor.Link">Back to login</Button>
+            </div>
+        </EditForm>
+    </CardBody>
+</Card>
+
+
+
+@code {
+    private readonly User _user = new();
+
+    private async Task HandleValidSubmit()
+    {
+        PreloadService.Show(loadingText: "Registering...");
+        var result = await UserService.RegisterUser(_user);
+        PreloadService.Hide();
+        if (result.IsSuccessStatusCode)
+        {
+            ToastService.Notify(new ToastMessage(ToastType.Success,
+                $"User {_user.Username} registered."));
+            NavigationManager.NavigateTo("login");
+        }
+        else
+        {
+            ToastService.Notify(new ToastMessage(ToastType.Warning,
+                "Failed to register user. Please try again."));
+        }
+    }
+
+}

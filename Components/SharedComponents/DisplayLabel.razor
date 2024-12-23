@@ -1,0 +1,20 @@
+@using System.ComponentModel.DataAnnotations
+@using System.Linq.Expressions
+@using System.Reflection
+@typeparam T
+<label class="@Class">@Label</label>
+
+@code {
+    [Parameter] public required Expression<Func<T>> For { get; set; }
+
+    [Parameter] public string Class { get; set; } = "";
+
+    private string Label => GetDisplayName();
+
+    private string GetDisplayName()
+    {
+        var expression = (MemberExpression)For.Body;
+        var value = expression.Member.GetCustomAttribute(typeof(DisplayAttribute)) as DisplayAttribute;
+        return value?.Name ?? expression.Member.Name ?? "";
+    }
+}

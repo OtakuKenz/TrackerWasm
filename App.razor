@@ -1,12 +1,75 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
-        <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+﻿@using TrackerWasm.AuthProvider
+@inject NavigationManager NavigationManager
+@inject CustomAuthStateProvider AuthenticationStateProvider
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@_defaultLayout">
+                <NotAuthorized>
+                    @if (context.User.Identity is { IsAuthenticated: true })
+                    {
+                        <p>You are not authorized to access this resource.</p>
+                    }
+                    else
+                    {
+                        <p>You must be logged in to access this page. Redirecting...</p>
+
+                        @code {
+
+                            protected override Task OnAfterRenderAsync(bool firstRender)
+                            {
+                                if (firstRender)
+                                {
+                                    NavigationManager.NavigateTo("login");
+                                }
+
+                                return Task.CompletedTask;
+                            }
+
+                        }
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <p>Sorry, there's nothing at this address.</p>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+@code
+
+{
+
+    private Type _defaultLayout = typeof(UnAuthenticatedUserLayout);
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Subscribe to authentication state changes
+        AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+
+        // Set initial layout based on current authentication state
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        UpdateLayout(authState);
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        // Fetch new authentication state
+        var authState = await task;
+
+        // Update layout based on the new authentication state
+        UpdateLayout(authState);
+
+        // Force the component to re-render
+        StateHasChanged();
+    }
+
+    private void UpdateLayout(AuthenticationState authState)
+    {
+        _defaultLayout = authState.User.Identity is { IsAuthenticated: true }
+            ? typeof(MainLayout) // Authenticated users
+            : typeof(UnAuthenticatedUserLayout); // Unauthenticated users
+    }
+}

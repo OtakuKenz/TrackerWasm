@@ -6,7 +6,7 @@ using TrackerWasm.Models.ComicModels;
 
 namespace TrackerWasm.Services;
 
-public class ComicService(HttpClient http)
+public class ComicService(HttpClient http, UserService userService)
 {
     public async Task<bool> IsComicTitleDuplicate(string comicTitle)
     {
@@ -38,6 +38,12 @@ public class ComicService(HttpClient http)
         return jsonElement.EnumerateArray().Any(element => element.TryGetProperty("document", out _));
     }
 
+    private async Task<string> GetComicUrl()
+    {
+        var userId = await userService.GetUserId();
+        return $"documents/comic-{userId}";
+    }
+
     public async Task<List<string>> GetComicTypeList()
     {
         List<string> data = [];
@@ -48,10 +54,7 @@ public class ComicService(HttpClient http)
             if (!doc.TryGetProperty("fields", out var fields)) continue;
             if (!fields.TryGetProperty("Value", out var status)) continue;
             var stringValue = status.GetProperty("stringValue").GetString();
-            if (stringValue != null)
-            {
-                data.Add(stringValue);
-            }
+            if (stringValue != null) data.Add(stringValue);
         }
 
         return data;
@@ -67,10 +70,7 @@ public class ComicService(HttpClient http)
             if (!doc.TryGetProperty("fields", out var fields)) continue;
             if (!fields.TryGetProperty("Status", out var status)) continue;
             var stringValue = status.GetProperty("stringValue").GetString();
-            if (stringValue != null)
-            {
-                data.Add(stringValue);
-            }
+            if (stringValue != null) data.Add(stringValue);
         }
 
         return data;
@@ -80,18 +80,13 @@ public class ComicService(HttpClient http)
     {
         List<string> data = [];
         var response = await http.GetFromJsonAsync<JsonElement>("documents/readStatus");
-        if (response.TryGetProperty("documents", out var documents))
+        if (!response.TryGetProperty("documents", out var documents)) return data;
+        foreach (var doc in documents.EnumerateArray())
         {
-            foreach (var doc in documents.EnumerateArray())
-            {
-                if (!doc.TryGetProperty("fields", out var fields)) continue;
-                if (!fields.TryGetProperty("Status", out var status)) continue;
-                var stringValue = status.GetProperty("stringValue").GetString();
-                if (stringValue != null)
-                {
-                    data.Add(stringValue);
-                }
-            }
+            if (!doc.TryGetProperty("fields", out var fields)) continue;
+            if (!fields.TryGetProperty("Status", out var status)) continue;
+            var stringValue = status.GetProperty("stringValue").GetString();
+            if (stringValue != null) data.Add(stringValue);
         }
 
         return data;
@@ -99,7 +94,7 @@ public class ComicService(HttpClient http)
 
     private async Task<List<Comic>> GetComicList()
     {
-        var response = await http.GetFromJsonAsync<JsonElement>("documents/comic");
+        var response = await http.GetFromJsonAsync<JsonElement>(await GetComicUrl());
         var data = FirestoreDataService.ComicService.DeserializeComics(response);
         return data;
     }
@@ -108,53 +103,45 @@ public class ComicService(HttpClient http)
     {
         var comicList = await GetComicList();
         if (!string.IsNullOrWhiteSpace(search.Title))
-        {
             comicList = comicList
                 .Where(comic => comic.Title.Contains(search.Title, StringComparison.CurrentCultureIgnoreCase)).ToList();
-        }
 
         if (!string.IsNullOrWhiteSpace(search.ComicType))
-        {
             comicList = comicList
                 .Where(comic => comic.ComicType == search.ComicType).ToList();
-        }
 
         if (!string.IsNullOrWhiteSpace(search.PublishingStatus))
-        {
             comicList = comicList
                 .Where(comic => comic.PublishingStatus == search.PublishingStatus).ToList();
-        }
 
         if (!string.IsNullOrWhiteSpace(search.ReadStatus))
-        {
             comicList = comicList
                 .Where(comic => comic.ReadStatus == search.ReadStatus).ToList();
-        }
 
         return comicList;
     }
 
     public async Task<Comic> GetComic(string comicId)
     {
-        var jsonElement = await http.GetFromJsonAsync<JsonElement>($"documents/comic/{comicId}");
+        var jsonElement = await http.GetFromJsonAsync<JsonElement>($"{await GetComicUrl()}/{comicId}");
         return FirestoreDataService.ComicService.DeserializeComic(jsonElement);
     }
 
     public async Task<HttpResponseMessage> SaveComic(Comic comic)
     {
         var serializedComic = FirestoreDataService.ComicService.SerializeComic(comic);
-        return await http.PostAsync($"documents/comic", serializedComic);
+        return await http.PostAsync(await GetComicUrl(), serializedComic);
     }
 
     public async Task<HttpResponseMessage> UpdateComic(Comic comic, string comicId)
     {
         var serialized = FirestoreDataService.ComicService.SerializeComic(comic);
-        return await http.PatchAsync($"documents/comic/{comicId}", serialized);
+        return await http.PatchAsync($"{await GetComicUrl()}/{comicId}", serialized);
     }
 
     public async Task<HttpResponseMessage> DeleteComic(string comicId)
     {
-        return await http.DeleteAsync($"documents/comic/{comicId}");
+        return await http.DeleteAsync($"{await GetComicUrl()}/{comicId}");
     }
 
     public async Task<ImportResult> ImportComic(ImportJsonMapping jsonMapping)
@@ -201,20 +188,13 @@ public class ComicService(HttpClient http)
             }
 
             var chapterRead = ConvertToInt(record, jsonMapping.ChapterRead);
-            if (chapterRead.IsValid)
-            {
-                comic.ChapterRead = chapterRead.Value > 0 ? chapterRead.Value : null;
-            }
+            if (chapterRead.IsValid) comic.ChapterRead = chapterRead.Value > 0 ? chapterRead.Value : null;
 
             var totalChapter = ConvertToInt(record, jsonMapping.TotalChapter);
-            if (totalChapter.IsValid)
-            {
-                comic.TotalChapter = totalChapter.Value > 0 ? totalChapter.Value : null;
-            }
+            if (totalChapter.IsValid) comic.TotalChapter = totalChapter.Value > 0 ? totalChapter.Value : null;
 
             var comicTypeValue = ConvertToString(record, jsonMapping.ComicType);
             if (comicTypeValue.IsValid)
-            {
                 if (!string.IsNullOrWhiteSpace(comicTypeValue.Value))
                 {
                     var comicType = comicTypeList.FirstOrDefault(x => x == comicTypeValue.Value);
@@ -226,11 +206,9 @@ public class ComicService(HttpClient http)
 
                     comic.ComicType = comicType;
                 }
-            }
 
             var publishingStatusValue = ConvertToString(record, jsonMapping.PublishingStatus);
             if (publishingStatusValue.IsValid)
-            {
                 if (!string.IsNullOrWhiteSpace(publishingStatusValue.Value))
                 {
                     var publishingType = publishingStatusList.FirstOrDefault(x => x == publishingStatusValue.Value);
@@ -242,11 +220,9 @@ public class ComicService(HttpClient http)
 
                     comic.PublishingStatus = publishingType;
                 }
-            }
 
             var readStatusValue = ConvertToString(record, jsonMapping.ReadStatus);
             if (readStatusValue.IsValid)
-            {
                 if (!string.IsNullOrWhiteSpace(readStatusValue.Value))
                 {
                     var readStatus = readStatusList.FirstOrDefault(x => x == readStatusValue.Value);
@@ -258,7 +234,6 @@ public class ComicService(HttpClient http)
 
                     comic.ReadStatus = readStatus;
                 }
-            }
 
             // await SaveComic(comic);
             comicsToSave.Add(comic);
@@ -266,24 +241,15 @@ public class ComicService(HttpClient http)
 
         importResult.Saved = comicsToSave.Count;
         var saveTasks = comicsToSave.Select(SaveComic); // Create tasks for each save operation
-        await Task.WhenAll(saveTasks); 
-        
-        return importResult;
-    }
+        await Task.WhenAll(saveTasks);
 
-    private class ConversionResult<T>
-    {
-        public bool IsValid { get; set; } = false;
-        public T? Value { get; set; }
+        return importResult;
     }
 
     private static ConversionResult<string> ConvertToString(JsonElement jsonElement, string property)
     {
         var result = new ConversionResult<string>();
-        if (string.IsNullOrWhiteSpace(property))
-        {
-            return result;
-        }
+        if (string.IsNullOrWhiteSpace(property)) return result;
 
         if (!jsonElement.TryGetProperty(property, out var element) ||
             element.ValueKind != JsonValueKind.String) return result;
@@ -298,10 +264,7 @@ public class ComicService(HttpClient http)
     private static ConversionResult<int> ConvertToInt(JsonElement jsonElement, string property)
     {
         var result = new ConversionResult<int>();
-        if (string.IsNullOrWhiteSpace(property))
-        {
-            return result;
-        }
+        if (string.IsNullOrWhiteSpace(property)) return result;
 
         if (!jsonElement.TryGetProperty(property, out var element) ||
             element.ValueKind != JsonValueKind.Number) return result;
@@ -311,5 +274,11 @@ public class ComicService(HttpClient http)
         result.Value = convertedInt;
 
         return result;
+    }
+
+    private class ConversionResult<T>
+    {
+        public bool IsValid { get; set; }
+        public T? Value { get; set; }
     }
 }

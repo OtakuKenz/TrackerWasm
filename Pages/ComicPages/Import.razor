@@ -1,5 +1,6 @@
 @page "/comic/import"
 @using System.Text.Json
+@using Microsoft.AspNetCore.Authorization
 @using TrackerWasm.Components.SharedComponents
 @using TrackerWasm.Models
 @using TrackerWasm.Services
@@ -8,6 +9,8 @@
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 @inject ComicService ComicService
+
+@attribute [Authorize]
 
 <PageTitle>Import Comics</PageTitle>
 
@@ -87,20 +90,21 @@
             {
                 ToastService.Notify(new ToastMessage(ToastType.Danger, $"Failed to import all {result.Failed}."));
             }
-            else switch (result)
-            {
-                case { Failed: > 0, Saved: > 0 }:
-                    ToastService.Notify(
-                        new ToastMessage(
-                            ToastType.Warning,
-                            $"{result.Saved} records imported. {result.Failed} not imported."
-                        )
-                    );
-                    break;
-                case { Failed: 0, Saved: > 0 }:
-                    ToastService.Notify(new ToastMessage(ToastType.Success, $"{result.Saved} records imported."));
-                    break;
-            }
+            else
+                switch (result)
+                {
+                    case { Failed: > 0, Saved: > 0 }:
+                        ToastService.Notify(
+                            new ToastMessage(
+                                ToastType.Warning,
+                                $"{result.Saved} records imported. {result.Failed} not imported."
+                            )
+                        );
+                        break;
+                    case { Failed: 0, Saved: > 0 }:
+                        ToastService.Notify(new ToastMessage(ToastType.Success, $"{result.Saved} records imported."));
+                        break;
+                }
 
             if (result.Duplicate > 0)
             {
@@ -129,7 +133,7 @@
             ToastService.Notify(
                 new ToastMessage(
                     ToastType.Danger,
-                    $"Failed to import."
+                    "Failed to import."
                 ));
             Console.WriteLine(e.Message);
             Console.WriteLine(e.StackTrace);

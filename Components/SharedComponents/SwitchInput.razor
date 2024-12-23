@@ -1,0 +1,44 @@
+@using System.ComponentModel.DataAnnotations
+@using System.Linq.Expressions
+@using System.Reflection
+@typeparam T
+
+<div class="form-check form-switch">
+    @* <Switch Value="Value" ValueChanged="OnValueChanged"></Switch> *@
+    <input class="form-check-input" type="checkbox" checked="@Value" @onchange="OnValueChanged"
+           role="switch">
+    <DisplayLabel For="@For" Class="form-check-label"></DisplayLabel>
+</div>
+
+@code {
+    [Parameter] public required Expression<Func<T>> For { get; set; }
+
+    /// <summary>
+    ///     Value
+    /// </summary>
+    [Parameter]
+    public bool Value { get; set; } = false;
+
+    /// <summary>
+    ///     Selection has changed
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> ValueChanged { get; set; }
+
+    private string Label => GetDisplayName();
+
+    private string GetDisplayName()
+    {
+        var expression = (MemberExpression)For.Body;
+        var value = expression.Member.GetCustomAttribute(typeof(DisplayAttribute)) as DisplayAttribute;
+        return value?.Name ?? expression.Member.Name ?? "";
+    }
+
+    private async Task OnValueChanged(ChangeEventArgs e)
+    {
+        bool.TryParse(e.Value?.ToString(), out var newValue);
+        Value = newValue;
+        await ValueChanged.InvokeAsync(newValue);
+    }
+
+}

@@ -1,0 +1,13 @@
+@page "/forcerefresh"
+@inject NavigationManager NavigationManager
+
+<h3>Refreshing...</h3>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.NavigateTo("comic/home"); 
+    }
+
+}
