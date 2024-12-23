@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "TrackerWasm",
   "resources": {
-    "hash": "sha256-wYbRGY0pbhf0cGzqTB1x/YLu2GkFWEshPH0X2Shoo5E=",
+    "hash": "sha256-7rHAsIDk41eBuRrVjwABcoAzA87kAr9twz0u+6HVZr0=",
     "jsModuleNative": {
       "dotnet.native.8.0.11.mhmfy2t74n.js": "sha256-VdKq87/z5NIxZKmuM+fv38XF+RcEb/bg3jVBwQSfwP4="
     },
@@ -18,10 +18,13 @@
     },
     "assembly": {
       "BlazorBootstrap.wasm": "sha256-oXgPBxQIMTQHVXUTwY/QUe7+g4uUxfm/kdDCUXRqxZ4=",
+      "Blazored.LocalStorage.wasm": "sha256-OaMAAd5n7ORfyur5e3QIyEVKJ76MKIvwbg7/icnnYcU=",
       "Microsoft.AspNetCore.Authorization.wasm": "sha256-W1OqRV83imd3SG/v4PAlCa5m/3RA9n5ysXT7G46jKKc=",
+      "Microsoft.AspNetCore.Components.Authorization.wasm": "sha256-V1DjV5FIfpwmhLHgE+6Sv/E95t+50ilGiAk6J5mqNFA=",
       "Microsoft.AspNetCore.Components.Forms.wasm": "sha256-uygu36HN/qUHLMopvhHgNiRvJHtoPqdkgtGxxdr1nY8=",
       "Microsoft.AspNetCore.Components.wasm": "sha256-BbzyjRS+gcf0R8v27CSNdTK4vm9XoqKz4NEhk7LK+dY=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-UU6I5F0N8ug+LyO1a+cyei0lfnhnCs+D82yuv75LZ00=",
+      "Microsoft.AspNetCore.Components.WebAssembly.Authentication.wasm": "sha256-iqU1rt64IjJ60eAGbgaXPiPxX1PzX81e/FoR2vvk2QU=",
       "Microsoft.AspNetCore.Components.WebAssembly.wasm": "sha256-6tnMX4ZUNb9MmcIXWPmq2IFtKS7q7xsafG8+oeE62uk=",
       "Microsoft.AspNetCore.Metadata.wasm": "sha256-Mvq2Fy4bw77m1ECnG7otq2ctOhvymfaC9ksNUcgOa7M=",
       "Microsoft.CSharp.wasm": "sha256-Uadhh9ejd0eod083HcpwnJ3OpcrMgcP88Vyftm5/ZkA=",
@@ -208,7 +211,7 @@
       "System.Xml.XmlSerializer.wasm": "sha256-6LMMq8P2VmX7SRkdGn8Fhn1n2HJzuiicVOTSjZPwO7c=",
       "System.Xml.XPath.wasm": "sha256-T+XnFMRS6QgBPQXe0Sm0AcyYMQPxgUpM9gWOS9K7Lis=",
       "System.Xml.XPath.XDocument.wasm": "sha256-Kzy2/teP/Zzq4DzSxR6+VOVMKLGM1KUn0xeqsxV7Vlw=",
-      "TrackerWasm.wasm": "sha256-jVYo8QmcOVX+gUMoXx7j1qh0dyZIH2DJLyZB9s4jRRo=",
+      "TrackerWasm.wasm": "sha256-ZOdPRMKxr9m9buDk5tD8l9JzvWtTmt+3ZN5O64QBXxs=",
       "WindowsBase.wasm": "sha256-OvvMg6Wq2zXE8rpCIWduWwx7Z2DmNb/Rc5MKcnddDzM="
     }
   },
