@@ -20,7 +20,7 @@ public class User
     [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
     public string PasswordConfirmation { get; set; } = "";
 
-    public string HashedPassword { get; set; }
+    public string HashedPassword { get; set; } = "";
 
-    public string UserId { get; set; }
+    public string UserId { get; set; } = "";
 }

@@ -5,7 +5,7 @@ using TrackerWasm.Services;
 
 namespace TrackerWasm.AuthProvider;
 
-public class CustomAuthStateProvider(UserService userService, ILocalStorageService localStorage)
+public class CustomAuthStateProvider(UserService userService)
     : AuthenticationStateProvider
 {
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
