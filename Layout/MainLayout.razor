@@ -8,8 +8,13 @@
 
 <BlazorBootstrapLayout StickyHeader="true">
     <HeaderSection>
-        <ThemeSwitcher Class="ps-3 ps-lg-2"/>
-        <Button @onclick="Logout" Color="ButtonColor.Link">Logout</Button>
+        <Dropdown Color="DropdownColor.None">
+            <DropdownToggleButton>@_displayName</DropdownToggleButton>
+            <DropdownMenu>
+                <DropdownItem @onclick="Setting" Type="DropdownItemType.Button">Setting</DropdownItem>
+                <DropdownItem @onclick="Logout" Type="DropdownItemType.Button">Logout</DropdownItem>
+            </DropdownMenu>
+        </Dropdown>
     </HeaderSection>
     <SidebarSection>
         <Sidebar2 Href="/" ImageSrc="https://demos.blazorbootstrap.com/images/logo/logo-white.svg" Title="Tracker"
@@ -29,6 +34,12 @@
 
     private IEnumerable<NavItem> _navItems = default!;
     private ConfirmDialog _logoutDialog = default!;
+    private string _displayName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _displayName = (await UserService.GetDiplayName())!;
+    }
 
     private async Task<Sidebar2DataProviderResult> Sidebar2DataProvider(Sidebar2DataProviderRequest request)
     {
@@ -50,6 +61,11 @@
             PreloadService.Hide();
             NavigationManager.NavigateTo("login");
         }
+    }
+
+    private void Setting()
+    {
+        NavigationManager.NavigateTo("setting");
     }
 
     private IEnumerable<NavItem> GetNavItems()
