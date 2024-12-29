@@ -15,9 +15,32 @@
 
 <h1>Webtoons & Manga</h1>
 
-<Button Color="ButtonColor.Primary" @onclick="Add">Add</Button>
-<Button Color="ButtonColor.Primary" @onclick="ToggleFilterAsync">Filter Setting</Button>
-<Button Color="ButtonColor.Primary" @onclick="ToggleContentAsync">Column Setting</Button>
+
+<div class="d-flex flex-wrap gap-2">
+
+    <div>
+        <Button Color="ButtonColor.Primary" @onclick="Add" TooltipTitle="Add">
+            <Icon Name="IconName.PlusCircle" />
+        </Button>
+    </div>
+
+    <div>
+        <Button Color="ButtonColor.Primary" @onclick="ToggleFilterAsync" TooltipTitle="Filter columns">
+            <Icon Name="IconName.Funnel" />
+        </Button>
+    </div>
+    <div>
+        <Button Color="ButtonColor.Primary" @onclick="ToggleContentAsync" TooltipTitle="Column setting">
+            <Icon Name="IconName.Gear" />
+        </Button>
+    </div>
+    <div>
+        <Button Color="ButtonColor.Primary" @onclick="PickRandom" TooltipTitle="Pick random">
+            <Icon Name="IconName.Shuffle" />
+        </Button>
+    </div>
+</div>
+
 
 
 
@@ -28,16 +51,18 @@
                 <CardTitle>Display Columns:</CardTitle>
                 <CardBody>
                     <EditForm Model="@_newValue" FormName="columnSetting" OnValidSubmit="ApplySetting">
-                        <DataAnnotationsValidator/>
+                        <DataAnnotationsValidator />
                         <div class="vstack gap-3">
-                            <SwitchInput For="()=>_newValue.ReadStatus" @bind-Value="@_newValue.ReadStatus"></SwitchInput>
+                            <SwitchInput For="()=>_newValue.ReadStatus" @bind-Value="@_newValue.ReadStatus">
+                            </SwitchInput>
                             <SwitchInput For="()=>_newValue.Type" @bind-Value="@_newValue.Type"></SwitchInput>
-                            <SwitchInput For="()=>_newValue.PublishingStatus"
-                                         @bind-Value="@_newValue.PublishingStatus"></SwitchInput>
+                            <SwitchInput For="()=>_newValue.PublishingStatus" @bind-Value="@_newValue.PublishingStatus">
+                            </SwitchInput>
                             <div class="form-group">
                                 <DisplayLabel For="@(() => _newValue.PageSize)"></DisplayLabel>
-                                <NumberInput TValue="int" @bind-Value="@_newValue.PageSize" Placeholder="Items per page"/>
-                                <ValidationMessage For="@(() => _newValue.PageSize)"/>
+                                <NumberInput TValue="int" @bind-Value="@_newValue.PageSize"
+                                    Placeholder="Items per page" />
+                                <ValidationMessage For="@(() => _newValue.PageSize)" />
                             </div>
                             <Button Color="ButtonColor.Primary" Class="mt-2" Type="ButtonType.Submit">Apply</Button>
                         </div>
@@ -55,12 +80,12 @@
                     <div class="vstack gap-3">
                         <div class="form-group">
                             <label for="Title">Title</label>
-                            <InputText id="Title" autocomplete="off" @bind-Value="_search.Title" class="form-control"/>
+                            <InputText id="Title" autocomplete="off" @bind-Value="_search.Title" class="form-control" />
                         </div>
 
-                        <ComicTypeDropdown @bind-Value="_search.ComicType"/>
-                        <PublishingStatusDropdown @bind-Value="_search.PublishingStatus"/>
-                        <ReadStatusDropdown @bind-Value="_search.ReadStatus"/>
+                        <ComicTypeDropdown @bind-Value="_search.ComicType" />
+                        <PublishingStatusDropdown @bind-Value="_search.PublishingStatus" />
+                        <ReadStatusDropdown @bind-Value="_search.ReadStatus" />
                         <div class="hstack gap-3">
                             <Button Color="ButtonColor.Primary" @onclick="FilterTable">Filter</Button>
                             <Button Color="ButtonColor.Secondary" @onclick="ClearFilterForm">Clear</Button>
@@ -70,34 +95,35 @@
             </CardBody>
         </Card>
     </Collapse>
-    
+
     <div class="flex-grow-1 overflow-auto">
         <Grid TItem="Comic" Class="table table-hover " DataProvider="EmployeesDataProvider" AllowPaging="false"
-              PageSize="@_tableSetting.PageSize" FixedHeader="true"
-              @ref="_grid">
+            PageSize="@_tableSetting.PageSize" FixedHeader="true" @ref="_grid">
             <GridColumns>
                 <GridColumn TItem="Comic" HeaderText="Title" PropertyName="Title" FilterButtonCSSClass="d-none"
-                            FilterOperator="FilterOperator.Contains" Filter>
+                    FilterOperator="FilterOperator.Contains" Filter>
                     @context.Title
                 </GridColumn>
                 <GridColumn TItem="Comic" HeaderText="Read Status"
-                            Class="@(_tableSetting.ReadStatus ? "text-end w-auto" : "d-none")"
-                            PropertyName="Value">
+                    Class="@(_tableSetting.ReadStatus ? "text-end w-auto" : "d-none")" PropertyName="Value">
                     @context.ReadStatus
                 </GridColumn>
                 <GridColumn TItem="Comic" HeaderText="Type"
-                            Class="@(_tableSetting.Type ? "text-end w-auto" : "d-none")">
+                    Class="@(_tableSetting.Type ? "text-end w-auto" : "d-none")">
                     @context.ComicType
                 </GridColumn>
                 <GridColumn TItem="Comic" HeaderText="Read" Filterable="false" Class="text-end w-auto">
-                    @(context.ChapterRead.HasValue ? context.ChapterRead.ToString() : "?")/@(context.TotalChapter.HasValue ? context.TotalChapter.ToString() : "?")
+                    @(context.ChapterRead.HasValue ? context.ChapterRead.ToString() :
+                        "?")/@(context.TotalChapter.HasValue ? context.TotalChapter.ToString() : "?")
                 </GridColumn>
                 <GridColumn TItem="Comic" HeaderText="Publishing Status"
-                            Class="@(_tableSetting.PublishingStatus ? "text-end w-auto" : "d-none")">
+                    Class="@(_tableSetting.PublishingStatus ? "text-end w-auto" : "d-none")">
                     @context.PublishingStatus
                 </GridColumn>
                 <GridColumn TItem="Comic" Filterable="false" Class="text-end w-auto">
-                    <Button Color="ButtonColor.Link" @onclick="() => Edit(context.Id)">Edit</Button>
+                    <Button @onclick="() => Edit(context.Id)" TooltipTitle="Edit">
+                        <Icon Name="IconName.Pencil"></Icon>
+                    </Button>
                 </GridColumn>
             </GridColumns>
         </Grid>
@@ -161,12 +187,12 @@
     {
         _readStatusDisplayed = _newValue.ReadStatus ? "" : "d-none";
         _tableSetting = new TableSetting
-        {
-            ReadStatus = _newValue.ReadStatus,
-            Type = _newValue.Type,
-            PublishingStatus = _newValue.PublishingStatus,
-            PageSize = _newValue.PageSize
-        };
+            {
+                ReadStatus = _newValue.ReadStatus,
+                Type = _newValue.Type,
+                PublishingStatus = _newValue.PublishingStatus,
+                PageSize = _newValue.PageSize
+            };
         Console.WriteLine($"Read status old value: {_tableSetting.ReadStatus}");
         Console.WriteLine($"Read status new value: {_newValue.ReadStatus}");
         PreloadService.Show(SpinnerColor.Light, "Updating Table...");
@@ -179,12 +205,12 @@
     private async Task ToggleContentAsync()
     {
         _newValue = new TableSetting
-        {
-            ReadStatus = _tableSetting.ReadStatus,
-            Type = _tableSetting.Type,
-            PublishingStatus = _tableSetting.PublishingStatus,
-            PageSize = _newValue.PageSize
-        };
+            {
+                ReadStatus = _tableSetting.ReadStatus,
+                Type = _tableSetting.Type,
+                PublishingStatus = _tableSetting.PublishingStatus,
+                PageSize = _newValue.PageSize
+            };
         await _columnSetting.ToggleAsync();
     }
 
@@ -206,6 +232,14 @@
     {
         _search = new Comic();
         await FilterTable();
+    }
+
+    private void PickRandom()
+    {
+        var random = new Random();
+        var index = random.Next(0, data.Count);
+        var comic = data[index];
+        NavigationManager.NavigateTo($"/comic/edit/{comic.Id}");
     }
 
 }
