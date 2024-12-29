@@ -58,13 +58,13 @@
                             <SwitchInput For="()=>_newValue.Type" @bind-Value="@_newValue.Type"></SwitchInput>
                             <SwitchInput For="()=>_newValue.PublishingStatus" @bind-Value="@_newValue.PublishingStatus">
                             </SwitchInput>
-                            <div class="form-group">
-                                <DisplayLabel For="@(() => _newValue.PageSize)"></DisplayLabel>
-                                <NumberInput TValue="int" @bind-Value="@_newValue.PageSize"
-                                    Placeholder="Items per page" />
-                                <ValidationMessage For="@(() => _newValue.PageSize)" />
+                            <SwitchInput For="()=>_newValue.Read" @bind-Value="@_newValue.Read">
+                            </SwitchInput>
+                            <div class="hstack gap-3">
+                                <Button Color="ButtonColor.Primary" @onclick="FilterTable"
+                                    Type="ButtonType.Submit">Filter</Button>
+                                <Button Color="ButtonColor.Secondary" @onclick="ResetSetting">Reset</Button>
                             </div>
-                            <Button Color="ButtonColor.Primary" Class="mt-2" Type="ButtonType.Submit">Apply</Button>
                         </div>
                     </EditForm>
                 </CardBody>
@@ -97,43 +97,84 @@
     </Collapse>
 
     <div class="flex-grow-1 overflow-auto">
-        <Grid TItem="Comic" Class="table table-hover " DataProvider="EmployeesDataProvider" AllowPaging="false"
-            PageSize="@_tableSetting.PageSize" FixedHeader="true" @ref="_grid">
-            <GridColumns>
-                <GridColumn TItem="Comic" HeaderText="Title" PropertyName="Title" FilterButtonCSSClass="d-none"
-                    FilterOperator="FilterOperator.Contains" Filter>
-                    @context.Title
-                </GridColumn>
-                <GridColumn TItem="Comic" HeaderText="Read Status"
-                    Class="@(_tableSetting.ReadStatus ? "text-end w-auto" : "d-none")" PropertyName="Value">
-                    @context.ReadStatus
-                </GridColumn>
-                <GridColumn TItem="Comic" HeaderText="Type"
-                    Class="@(_tableSetting.Type ? "text-end w-auto" : "d-none")">
-                    @context.ComicType
-                </GridColumn>
-                <GridColumn TItem="Comic" HeaderText="Read" Filterable="false" Class="text-end w-auto">
-                    @(context.ChapterRead.HasValue ? context.ChapterRead.ToString() :
-                        "?")/@(context.TotalChapter.HasValue ? context.TotalChapter.ToString() : "?")
-                </GridColumn>
-                <GridColumn TItem="Comic" HeaderText="Publishing Status"
-                    Class="@(_tableSetting.PublishingStatus ? "text-end w-auto" : "d-none")">
-                    @context.PublishingStatus
-                </GridColumn>
-                <GridColumn TItem="Comic" Filterable="false" Class="text-end w-auto">
-                    <Button @onclick="() => Edit(context.Id)" TooltipTitle="Edit">
-                        <Icon Name="IconName.Pencil"></Icon>
-                    </Button>
-                </GridColumn>
-            </GridColumns>
-        </Grid>
+        <div class="">
+            <table class="table table-hover">
+                <thead class="sticky-top">
+                    <tr>
+                        <th scope="col" style="min-width: 10em;">Title</th>
+                        @if (_tableSetting.ReadStatus)
+                        {
+                            <th scope="col" style="min-width: 7em; max-width:7em; width: 7em;">Read Status</th>
+                        }
+                        @if (_tableSetting.Type)
+                        {
+                            <th scope="col" style="min-width: 5em; max-width:5em; width: 5em;">Type</th>
+                        }
+                        @if (_tableSetting.Read)
+                        {
+                            <th scope="col" style="min-width: 10em; max-width: 10em; width: 10em;">Chapter Read</th>
+                        }
+                        @if (_tableSetting.PublishingStatus)
+                        {
+                            <th scope="col" style="min-width: 10em; max-width:10em; width: 10em;">Publishing Status</th>
+                        }
+                        <th scope="col" style="min-width: 42px; width:42px"></th>
+                    </tr>
+                </thead>
+                @if (!_isDataLoaded)
+                {
+                    <PlaceholderDefault></PlaceholderDefault>
+                }
+                else
+                {
+                    <tbody>
+                        @if (data.Count == 0)
+                        {
+                            <div>
+                                <h3>No data found</h3>
+                            </div>
+                        }
+                        else
+                        {
+                            <Virtualize Items="@data" Context="comic">
+                                <tr>
+                                    <td>@comic.Title</td>
+                                    @if (_tableSetting.ReadStatus)
+                                    {
+                                        <td>@comic.ReadStatus</td>
+                                    }
+                                    @if (_tableSetting.Type)
+                                    {
+                                        <td>@comic.ComicType</td>
+                                    }
+                                    @if (_tableSetting.Read)
+                                    {
+                                        <td>
+                                            <div> @(comic.ChapterRead.HasValue ? comic.ChapterRead.ToString() :
+                                          "?")/@(comic.TotalChapter.HasValue ? comic.TotalChapter.ToString() : "?")</div>
+                                        </td>
+                                    }
+                                    @if (_tableSetting.PublishingStatus)
+                                    {
+                                        <td>@comic.PublishingStatus</td>
+                                    }
+                                    <td>
+                                        <Button @onclick="() => Edit(comic.Id)" TooltipTitle="Edit">
+                                            <Icon Name="IconName.Pencil"></Icon>
+                                        </Button>
+                                    </td>
+                                </tr>
+                            </Virtualize>
+                        }
+                    </tbody>
+                }
+            </table>
+        </div>
     </div>
 </div>
 
 @code {
     private List<Comic> _comics = [];
-
-    private bool _gridDataLoaded;
 
     private TableSetting _tableSetting = new();
     private TableSetting _newValue = new();
@@ -142,20 +183,18 @@
 
     private Collapse _filterSetting = default!;
 
-    private Grid<Comic> _grid = default!;
     private List<Comic> data = [];
 
     private Comic _search = new();
+
+    private bool _isDataLoaded = false;
 
     private class TableSetting
     {
         [Display(Name = "Read status")] public bool ReadStatus { get; set; }
         [Display(Name = "Type")] public bool Type { get; set; }
         [Display(Name = "Publishing status")] public bool PublishingStatus { get; set; }
-
-        [Display(Name = "Page size")]
-        [Range(5, int.MaxValue, ErrorMessage = "Page size should be minimum of 5")]
-        public int PageSize { get; set; } = 5;
+        [Display(Name = "Chapter Read")] public bool Read { get; set; }
     }
 
     private void Add()
@@ -168,38 +207,34 @@
         NavigationManager.NavigateTo($"/comic/edit/{id}");
     }
 
-    string _readStatusDisplayed = "";
-
-    private async Task<GridDataProviderResult<Comic>> EmployeesDataProvider(GridDataProviderRequest<Comic> request)
+    protected override async Task OnInitializedAsync()
     {
-        PreloadService.Show();
-        if (!_gridDataLoaded)
-        {
-            data = await ComicService.GetComicList(_search);
-            _gridDataLoaded = true;
-        }
-
-        PreloadService.Hide();
-        return await Task.FromResult(request.ApplyTo(data));
+        await FilterTable();
     }
 
     private async Task ApplySetting()
     {
-        _readStatusDisplayed = _newValue.ReadStatus ? "" : "d-none";
         _tableSetting = new TableSetting
             {
                 ReadStatus = _newValue.ReadStatus,
                 Type = _newValue.Type,
                 PublishingStatus = _newValue.PublishingStatus,
-                PageSize = _newValue.PageSize
+                Read = _newValue.Read
             };
-        Console.WriteLine($"Read status old value: {_tableSetting.ReadStatus}");
-        Console.WriteLine($"Read status new value: {_newValue.ReadStatus}");
         PreloadService.Show(SpinnerColor.Light, "Updating Table...");
         await Task.Delay(200);
         StateHasChanged();
         await _columnSetting.ToggleAsync();
         PreloadService.Hide();
+    }
+
+    private async Task ResetSetting()
+    {
+        _newValue.ReadStatus = false;
+        _newValue.PublishingStatus = false;
+        _newValue.Read = false;
+        _newValue.Type = false;
+        await ApplySetting();
     }
 
     private async Task ToggleContentAsync()
@@ -209,7 +244,7 @@
                 ReadStatus = _tableSetting.ReadStatus,
                 Type = _tableSetting.Type,
                 PublishingStatus = _tableSetting.PublishingStatus,
-                PageSize = _newValue.PageSize
+                Read = _tableSetting.Read
             };
         await _columnSetting.ToggleAsync();
     }
@@ -221,17 +256,21 @@
 
     private async Task FilterTable()
     {
-        PreloadService.Show(SpinnerColor.Light, "Filtering data...");
-        _gridDataLoaded = false;
-        await _grid.RefreshDataAsync();
-        await _filterSetting.ToggleAsync();
+        _isDataLoaded = false;
+        StateHasChanged();
+        PreloadService.Show();
+        data = await ComicService.GetComicList(_search);
+        _isDataLoaded = true;
+        StateHasChanged();
         PreloadService.Hide();
+
     }
 
     private async Task ClearFilterForm()
     {
         _search = new Comic();
         await FilterTable();
+        await ToggleFilterAsync();
     }
 
     private void PickRandom()
