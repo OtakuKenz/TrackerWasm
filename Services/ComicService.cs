@@ -194,48 +194,44 @@ public class ComicService(HttpClient http, UserService userService)
             if (totalChapter.IsValid) comic.TotalChapter = totalChapter.Value > 0 ? totalChapter.Value : null;
 
             var comicTypeValue = ConvertToString(record, jsonMapping.ComicType);
-            if (comicTypeValue.IsValid)
-                if (!string.IsNullOrWhiteSpace(comicTypeValue.Value))
+            if (comicTypeValue.IsValid && !string.IsNullOrWhiteSpace(comicTypeValue.Value))
+            {
+                var comicType = comicTypeList.FirstOrDefault(x => x == comicTypeValue.Value);
+                if (comicType == null)
                 {
-                    var comicType = comicTypeList.FirstOrDefault(x => x == comicTypeValue.Value);
-                    if (comicType == null)
-                    {
-                        importResult.Failed++;
-                        continue;
-                    }
-
-                    comic.ComicType = comicType;
+                    importResult.Failed++;
+                    continue;
                 }
+
+                comic.ComicType = comicType;
+            }
 
             var publishingStatusValue = ConvertToString(record, jsonMapping.PublishingStatus);
-            if (publishingStatusValue.IsValid)
-                if (!string.IsNullOrWhiteSpace(publishingStatusValue.Value))
+            if (publishingStatusValue.IsValid && !string.IsNullOrWhiteSpace(publishingStatusValue.Value))
+            {
+                var publishingType = publishingStatusList.FirstOrDefault(x => x == publishingStatusValue.Value);
+                if (publishingType == null)
                 {
-                    var publishingType = publishingStatusList.FirstOrDefault(x => x == publishingStatusValue.Value);
-                    if (publishingType == null)
-                    {
-                        importResult.Failed++;
-                        continue;
-                    }
-
-                    comic.PublishingStatus = publishingType;
+                    importResult.Failed++;
+                    continue;
                 }
+
+                comic.PublishingStatus = publishingType;
+            }
 
             var readStatusValue = ConvertToString(record, jsonMapping.ReadStatus);
-            if (readStatusValue.IsValid)
-                if (!string.IsNullOrWhiteSpace(readStatusValue.Value))
+            if (readStatusValue.IsValid && !string.IsNullOrWhiteSpace(readStatusValue.Value))
+            {
+                var readStatus = readStatusList.FirstOrDefault(x => x == readStatusValue.Value);
+                if (readStatus == null)
                 {
-                    var readStatus = readStatusList.FirstOrDefault(x => x == readStatusValue.Value);
-                    if (readStatus == null)
-                    {
-                        importResult.Failed++;
-                        continue;
-                    }
-
-                    comic.ReadStatus = readStatus;
+                    importResult.Failed++;
+                    continue;
                 }
 
-            // await SaveComic(comic);
+                comic.ReadStatus = readStatus;
+            }
+
             comicsToSave.Add(comic);
         }
 
@@ -276,7 +272,7 @@ public class ComicService(HttpClient http, UserService userService)
         return result;
     }
 
-    private class ConversionResult<T>
+    private sealed class ConversionResult<T>
     {
         public bool IsValid { get; set; }
         public T? Value { get; set; }
