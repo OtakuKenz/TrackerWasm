@@ -41,9 +41,6 @@
     </div>
 </div>
 
-
-
-
 <div class="d-flex flex-column mt-3" style="height: 75vh;">
     <Collapse @ref="_columnSetting">
         <Card class="mt-2">
@@ -173,7 +170,48 @@
     </div>
 </div>
 
+<Modal @ref="modal" CloseOnEscape="true" UseStaticBackdrop="true">
+    <BodyTemplate>
+        <div class="d-flex flex-column gap-3">
+            <h3>@_randomizedComic.Title
+            </h3>
+            <div>
+                <DisplayLabel For="@(() => _randomizedComic.Title)"></DisplayLabel>:
+                <div>@_randomizedComic.Title</div>
+            </div>
+            <div>
+                <DisplayLabel For="@(() => _randomizedComic.ComicType)"></DisplayLabel>:
+                <div>@(!string.IsNullOrEmpty(_randomizedComic.ComicType) ? _randomizedComic.ComicType : "N/A")</div>
+            </div>
+            <div>
+                <DisplayLabel For="@(() => _randomizedComic.ReadStatus)"></DisplayLabel>:
+                <div>@(!string.IsNullOrEmpty(_randomizedComic.ReadStatus) ? _randomizedComic.ReadStatus : "N/A")</div>
+            </div>
+            <div>
+                <DisplayLabel For="@(() => _randomizedComic.ChapterRead)"></DisplayLabel>:
+                <div>@(_randomizedComic.ChapterRead.HasValue ? _randomizedComic.ChapterRead.ToString() : "N/A")</div>
+            </div>
+            <div>
+                <DisplayLabel For="@(() => _randomizedComic.TotalChapter)"></DisplayLabel>:
+                <div>@(_randomizedComic.TotalChapter.HasValue ? _randomizedComic.TotalChapter.ToString() : "N/A")</div>
+            </div>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button TooltipTitle="Edit" @onclick="() => Edit(_randomizedComic.Id)">
+            <Icon Name="IconName.Pencil"></Icon>
+        </Button>
+        <Button TooltipTitle="Pick Another" @onclick="PickRandom">
+            <Icon Name="IconName.Shuffle"></Icon>
+        </Button>
+        <Button Color="ButtonColor.Secondary" @onclick="CloseModal">Close</Button>
+    </FooterTemplate>
+</Modal>
+
+
 @code {
+    private Modal modal = default!;
+
     private List<Comic> _comics = [];
 
     private TableSetting _tableSetting = new();
@@ -188,6 +226,8 @@
     private Comic _search = new();
 
     private bool _isDataLoaded = false;
+
+    private Comic _randomizedComic = new();
 
     private class TableSetting
     {
@@ -275,10 +315,15 @@
 
     private void PickRandom()
     {
+        modal?.ShowAsync();
         var random = new Random();
         var index = random.Next(0, data.Count);
-        var comic = data[index];
-        NavigationManager.NavigateTo($"/comic/edit/{comic.Id}");
+        _randomizedComic = data[index];
+    }
+
+    private void CloseModal()
+    {
+        modal?.HideAsync();
     }
 
 }
