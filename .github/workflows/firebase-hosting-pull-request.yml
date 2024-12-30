@@ -20,13 +20,14 @@ jobs:
       - name: Publish .NET project
         run: dotnet publish -c Release -o bin/Release/net8.0/publish
       - name: List directory contents
-        run: ls -la bin/Release/net8.0/publish
+        run: ls -la bin/Release/net8.0/publish/wwwroot
       - name: Deploy to Firebase Hosting
         run: |
-          cd bin/Release/net8.0/publish
-          if [ -d "publish" ]; then
+          if [ -d "bin/Release/net8.0/publish/wwwroot" ]; then
             npx firebase-tools@latest hosting:channel:deploy pr${{ github.event.number }}-UpdateConfig --expires 7d --project tracker-c119a --json
           else
-            echo "Error: Directory 'publish' for Hosting does not exist."
+            echo "Error: Directory 'bin/Release/net8.0/publish/wwwroot' for Hosting does not exist."
             exit 1
           fi
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRACKER_C119A }}
