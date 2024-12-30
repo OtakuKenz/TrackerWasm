@@ -30,5 +30,3 @@ jobs:
             echo "Error: Directory 'publish' for Hosting does not exist."
             exit 1
           fi
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRACKER_C119A }}
