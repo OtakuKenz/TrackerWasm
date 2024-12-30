@@ -4,7 +4,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "public": "bin/Release/net8.0/publish",
+    "public": "home/runner/work/TrackerWasm/TrackerWasm/bin/Release/net8.0/publish",
     "ignore": [
       "firebase.json",
       "**/.*",
