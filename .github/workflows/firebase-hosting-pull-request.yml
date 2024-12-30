@@ -17,30 +17,11 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: '8.0.x'
-      - name: Print Working Directory
-        run: pwd
       - name: Publish .NET project
         run: dotnet publish -c Release -o bin/Release/net8.0/publish
-      - name: Publish Build Artifact
-        uses: actions/upload-artifact@v3
+      - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          name: blazor-wasm-app
-          path: bin/Release/net8.0/publish
-
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: blazor-wasm-app
-
-      - name: Deploy to Firebase Hosting
-        uses: firebase/action-hosting-deploy@v0
-        with:
-          args: deploy --only hosting
-          token: ${{ secrets.FIREBASE_TOKEN }}
-          project: tracker-c119a
-          public: blazor-wasm-app
-
-      - name: Verify Deployment
-        run: |
-          echo "Deployment successful!"
-          echo "Visit your preview URL: ${{ steps.deploy-to-firebase-hosting.outputs.siteUrl }}"
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRACKER_C119A }}
+          projectId: tracker-c119a
+          entryPoint: bin/Release/net8.0/publish
