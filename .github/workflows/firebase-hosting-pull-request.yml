@@ -19,6 +19,8 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Publish .NET project
         run: dotnet publish -c Release -o bin/Release/net8.0/publish
+      - name: Verify publish directory exists
+        run: ls -la bin/Release/net8.0/publish
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
