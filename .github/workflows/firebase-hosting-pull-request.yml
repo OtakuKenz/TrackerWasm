@@ -23,10 +23,11 @@ jobs:
         run: ls -la bin/Release/net8.0/publish/wwwroot
       - name: Deploy to Firebase Hosting
         run: |
-          if [ -d "bin/Release/net8.0/publish/wwwroot" ]; then
+          cd bin/Release/net8.0/publish
+          if [ -d "wwwroot" ]; then
             npx firebase-tools@latest hosting:channel:deploy pr${{ github.event.number }}-UpdateConfig --expires 7d --project tracker-c119a --json
           else
-            echo "Error: Directory 'bin/Release/net8.0/publish/wwwroot' for Hosting does not exist."
+            echo "Error: Directory 'wwwroot' for Hosting does not exist."
             exit 1
           fi
         env:
