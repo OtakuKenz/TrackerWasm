@@ -28,4 +28,5 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRACKER_C119A }}
           projectId: tracker-c119a
-          entryPoint: bin/Release/net8.0/publish
+          entryPoint: home/runner/work/TrackerWasm/TrackerWasm/bin/Release/net8.0/publish
+          
