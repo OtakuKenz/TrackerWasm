@@ -17,160 +17,106 @@
 
 
 <div class="d-flex flex-wrap gap-2">
-
     <div>
-        <Button Color="ButtonColor.Primary" @onclick="Add" TooltipTitle="Add">
+        <Button Color="ButtonColor.Primary" @onclick="Add">
             <Icon Name="IconName.PlusCircle" />
         </Button>
     </div>
 
     <div>
-        <Button Color="ButtonColor.Primary" @onclick="ToggleFilterAsync" TooltipTitle="Filter columns">
+        <Button Color="ButtonColor.Primary" @onclick="ToggleFilterAsync">
             <Icon Name="IconName.Funnel" />
         </Button>
     </div>
     <div>
-        <Button Color="ButtonColor.Primary" @onclick="ToggleContentAsync" TooltipTitle="Column setting">
+        <Button Color="ButtonColor.Primary" @onclick="ToggleContentAsync">
             <Icon Name="IconName.Gear" />
         </Button>
     </div>
     <div>
-        <Button Color="ButtonColor.Primary" @onclick="PickRandom" TooltipTitle="Pick random">
+        <Button Color="ButtonColor.Primary" @onclick="PickRandom">
             <Icon Name="IconName.Shuffle" />
         </Button>
     </div>
 </div>
 
 <div class="d-flex flex-column mt-3" style="height: 75vh;">
-    <Collapse @ref="_columnSetting">
-        <Card class="mt-2">
-            <CardBody>
-                <CardTitle>Display Columns:</CardTitle>
-                <CardBody>
-                    <EditForm Model="@_newValue" FormName="columnSetting" OnValidSubmit="ApplySetting">
-                        <DataAnnotationsValidator />
-                        <div class="vstack gap-3">
-                            <SwitchInput For="()=>_newValue.ReadStatus" @bind-Value="@_newValue.ReadStatus">
-                            </SwitchInput>
-                            <SwitchInput For="()=>_newValue.Type" @bind-Value="@_newValue.Type"></SwitchInput>
-                            <SwitchInput For="()=>_newValue.PublishingStatus" @bind-Value="@_newValue.PublishingStatus">
-                            </SwitchInput>
-                            <SwitchInput For="()=>_newValue.Read" @bind-Value="@_newValue.Read">
-                            </SwitchInput>
-                            <div class="hstack gap-3">
-                                <Button Color="ButtonColor.Primary" @onclick="FilterTable"
-                                    Type="ButtonType.Submit">Filter</Button>
-                                <Button Color="ButtonColor.Secondary" @onclick="ResetSetting">Reset</Button>
-                            </div>
-                        </div>
-                    </EditForm>
-                </CardBody>
-            </CardBody>
-        </Card>
-    </Collapse>
-
-    <Collapse @ref="_filterSetting">
-        <Card class="mt-2">
-            <CardBody>
-                <CardTitle>Filter Setting:</CardTitle>
-                <CardBody>
-                    <div class="vstack gap-3">
-                        <div class="form-group">
-                            <label for="Title">Title</label>
-                            <InputText id="Title" autocomplete="off" @bind-Value="_search.Title" class="form-control" />
-                        </div>
-
-                        <ComicTypeDropdown @bind-Value="_search.ComicType" />
-                        <PublishingStatusDropdown @bind-Value="_search.PublishingStatus" />
-                        <ReadStatusDropdown @bind-Value="_search.ReadStatus" />
-                        <div class="hstack gap-3">
-                            <Button Color="ButtonColor.Primary" @onclick="FilterTable">Filter</Button>
-                            <Button Color="ButtonColor.Secondary" @onclick="ClearFilterForm">Clear</Button>
-                        </div>
-                    </div>
-                </CardBody>
-            </CardBody>
-        </Card>
-    </Collapse>
-
     <div class="flex-grow-1 overflow-auto">
-        <div class="">
-            <table class="table table-hover">
-                <thead class="sticky-top">
-                    <tr>
-                        <th scope="col" style="min-width: 10em;">Title</th>
-                        @if (_tableSetting.ReadStatus)
-                        {
-                            <th scope="col" style="min-width: 7em; max-width:7em; width: 7em;">Read Status</th>
-                        }
-                        @if (_tableSetting.Type)
-                        {
-                            <th scope="col" style="min-width: 5em; max-width:5em; width: 5em;">Type</th>
-                        }
-                        @if (_tableSetting.Read)
-                        {
-                            <th scope="col" style="min-width: 10em; max-width: 10em; width: 10em;">Chapter Read</th>
-                        }
-                        @if (_tableSetting.PublishingStatus)
-                        {
-                            <th scope="col" style="min-width: 10em; max-width:10em; width: 10em;">Publishing Status</th>
-                        }
-                        <th scope="col" style="min-width: 42px; width:42px"></th>
-                    </tr>
-                </thead>
-                @if (!_isDataLoaded)
-                {
-                    <PlaceholderDefault></PlaceholderDefault>
-                }
-                else
-                {
-                    <tbody>
-                        @if (data.Count == 0)
-                        {
-                            <div>
-                                <h3>No data found</h3>
-                            </div>
-                        }
-                        else
-                        {
-                            <Virtualize Items="@data" Context="comic">
-                                <tr>
-                                    <td>@comic.Title</td>
-                                    @if (_tableSetting.ReadStatus)
-                                    {
-                                        <td>@comic.ReadStatus</td>
-                                    }
-                                    @if (_tableSetting.Type)
-                                    {
-                                        <td>@comic.ComicType</td>
-                                    }
-                                    @if (_tableSetting.Read)
-                                    {
-                                        <td>
-                                            <div> @(comic.ChapterRead.HasValue ? comic.ChapterRead.ToString() :
-                                          "?")/@(comic.TotalChapter.HasValue ? comic.TotalChapter.ToString() : "?")</div>
-                                        </td>
-                                    }
-                                    @if (_tableSetting.PublishingStatus)
-                                    {
-                                        <td>@comic.PublishingStatus</td>
-                                    }
+        <table class="table table-hover">
+            <thead class="sticky-top">
+                <tr>
+                    <th scope="col" style="min-width: 10em;">Title</th>
+                    @if (_tableSetting.ReadStatus)
+                    {
+                        <th scope="col" style="min-width: 7em; max-width:7em; width: 7em;">Read Status</th>
+                    }
+                    @if (_tableSetting.Type)
+                    {
+                        <th scope="col" style="min-width: 5em; max-width:5em; width: 5em;">Type</th>
+                    }
+                    @if (_tableSetting.Read)
+                    {
+                        <th scope="col" style="min-width: 10em; max-width: 10em; width: 10em;">Chapter Read</th>
+                    }
+                    @if (_tableSetting.PublishingStatus)
+                    {
+                        <th scope="col" style="min-width: 10em; max-width:10em; width: 10em;">Publishing Status</th>
+                    }
+                    <th scope="col" style="min-width: 42px; width:42px"></th>
+                </tr>
+            </thead>
+            @if (!_isDataLoaded)
+            {
+                <PlaceholderDefault></PlaceholderDefault>
+            }
+            else
+            {
+                <tbody>
+                    @if (data.Count == 0)
+                    {
+                        <div>
+                            <h3>No data found</h3>
+                        </div>
+                    }
+                    else
+                    {
+                        <Virtualize Items="@data" Context="comic">
+                            <tr>
+                                <td>@comic.Title</td>
+                                @if (_tableSetting.ReadStatus)
+                                {
+                                    <td>@comic.ReadStatus</td>
+                                }
+                                @if (_tableSetting.Type)
+                                {
+                                    <td>@comic.ComicType</td>
+                                }
+                                @if (_tableSetting.Read)
+                                {
                                     <td>
-                                        <Button @onclick="() => Edit(comic.Id)" TooltipTitle="Edit">
-                                            <Icon Name="IconName.Pencil"></Icon>
-                                        </Button>
+                                        <div> @(comic.ChapterRead.HasValue ? comic.ChapterRead.ToString() :
+                                      "?")/@(comic.TotalChapter.HasValue ? comic.TotalChapter.ToString() : "?")</div>
                                     </td>
-                                </tr>
-                            </Virtualize>
-                        }
-                    </tbody>
-                }
-            </table>
-        </div>
+                                }
+                                @if (_tableSetting.PublishingStatus)
+                                {
+                                    <td>@comic.PublishingStatus</td>
+                                }
+                                <td>
+                                    <Button @onclick="() => Edit(comic.Id)" TooltipTitle="Edit">
+                                        <Icon Name="IconName.Pencil"></Icon>
+                                    </Button>
+                                </td>
+                            </tr>
+                        </Virtualize>
+                    }
+                </tbody>
+            }
+        </table>
     </div>
 </div>
 
-<Modal @ref="modal" CloseOnEscape="true" UseStaticBackdrop="true">
+<Modal @ref="randomizedModal" CloseOnEscape="true" UseStaticBackdrop="true">
     <BodyTemplate>
         <div class="d-flex flex-column gap-3">
             <h3>@_randomizedComic.Title
@@ -182,6 +128,11 @@
             <div>
                 <DisplayLabel For="@(() => _randomizedComic.ComicType)"></DisplayLabel>:
                 <div>@(!string.IsNullOrEmpty(_randomizedComic.ComicType) ? _randomizedComic.ComicType : "N/A")</div>
+            </div>
+            <div>
+                <DisplayLabel For="@(() => _randomizedComic.PublishingStatus)"></DisplayLabel>:
+                <div>@(!string.IsNullOrEmpty(_randomizedComic.PublishingStatus) ? _randomizedComic.PublishingStatus :
+                       "N/A")</div>
             </div>
             <div>
                 <DisplayLabel For="@(() => _randomizedComic.ReadStatus)"></DisplayLabel>:
@@ -208,18 +159,60 @@
     </FooterTemplate>
 </Modal>
 
+<Modal @ref="columnSettingModal" CloseOnEscape="true" UseStaticBackdrop="true">
+    <BodyTemplate>
+        <EditForm id="columnSettingForm" Model="@_newValue" FormName="columnSetting" OnValidSubmit="ApplySetting">
+            <h3>Display Columns:</h3>
+            <DataAnnotationsValidator />
+            <div class="vstack gap-3">
+                <SwitchInput For="()=>_newValue.ReadStatus" @bind-Value="@_newValue.ReadStatus">
+                </SwitchInput>
+                <SwitchInput For="()=>_newValue.Type" @bind-Value="@_newValue.Type"></SwitchInput>
+                <SwitchInput For="()=>_newValue.PublishingStatus" @bind-Value="@_newValue.PublishingStatus">
+                </SwitchInput>
+                <SwitchInput For="()=>_newValue.Read" @bind-Value="@_newValue.Read">
+                </SwitchInput>
+            </div>
+        </EditForm>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit" form="columnSettingForm">Filter</Button>
+        <Button Color="ButtonColor.Secondary" @onclick="ResetSetting">Reset</Button>
+    </FooterTemplate>
+</Modal>
+
+<Modal @ref="filterSettingModal" CloseOnEscape="true" UseStaticBackdrop="true">
+    <BodyTemplate>
+        <h3>Filter Setting:</h3>
+        <div class="vstack gap-3" @ref="_filterSettingDiv">
+            <div class="form-group">
+                <label for="Title">Title</label>
+                <InputText id="Title" autocomplete="off" @bind-Value="_search.Title" class="form-control" />
+            </div>
+            <ComicTypeDropdown @bind-Value="_search.ComicType" />
+            <PublishingStatusDropdown @bind-Value="_search.PublishingStatus" />
+            <ReadStatusDropdown @bind-Value="_search.ReadStatus" />
+            <div class="hstack gap-3">
+            </div>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Primary" @onclick="FilterTable">Filter</Button>
+        <Button Color="ButtonColor.Secondary" @onclick="ClearFilterForm">Clear</Button>
+    </FooterTemplate>
+</Modal>
+
 
 @code {
-    private Modal modal = default!;
+    private ElementReference _filterSettingDiv = default!;
+    private Modal randomizedModal = default!;
+    private Modal columnSettingModal = default!;
+    private Modal filterSettingModal = default!;
 
     private List<Comic> _comics = [];
 
     private TableSetting _tableSetting = new();
     private TableSetting _newValue = new();
-
-    private Collapse _columnSetting = default!;
-
-    private Collapse _filterSetting = default!;
 
     private List<Comic> data = [];
 
@@ -261,11 +254,8 @@
                 PublishingStatus = _newValue.PublishingStatus,
                 Read = _newValue.Read
             };
-        PreloadService.Show(SpinnerColor.Light, "Updating Table...");
-        await Task.Delay(200);
         StateHasChanged();
-        await _columnSetting.ToggleAsync();
-        PreloadService.Hide();
+        await columnSettingModal.HideAsync();
     }
 
     private async Task ResetSetting()
@@ -286,12 +276,12 @@
                 PublishingStatus = _tableSetting.PublishingStatus,
                 Read = _tableSetting.Read
             };
-        await _columnSetting.ToggleAsync();
+        await columnSettingModal.ShowAsync();
     }
 
     private async Task ToggleFilterAsync()
     {
-        await _filterSetting.ToggleAsync();
+        await filterSettingModal.ShowAsync();
     }
 
     private async Task FilterTable()
@@ -303,7 +293,7 @@
         _isDataLoaded = true;
         StateHasChanged();
         PreloadService.Hide();
-
+        await filterSettingModal.HideAsync();
     }
 
     private async Task ClearFilterForm()
@@ -315,7 +305,7 @@
 
     private void PickRandom()
     {
-        modal?.ShowAsync();
+        randomizedModal?.ShowAsync();
         var random = new Random();
         var index = random.Next(0, data.Count);
         _randomizedComic = data[index];
@@ -323,7 +313,6 @@
 
     private void CloseModal()
     {
-        modal?.HideAsync();
+        randomizedModal?.HideAsync();
     }
-
 }
