@@ -48,22 +48,18 @@
         <div class="mt-3 hstack gap-3">
             @if (ComicId != null)
             {
-                <Tooltip Title="Delete">
-                    <Button Color="ButtonColor.Danger" @onclick="ShowConfirmationAsync">
-                        <Icon Name="IconName.Trash"></Icon>
-                    </Button>
-                </Tooltip>
+                <Button Color="ButtonColor.Danger" @onclick="ShowConfirmationAsync">
+                    <Icon Name="IconName.Trash"></Icon>
+                </Button>
                 <div class="vr ms-auto"></div>
             }
             else
             {
                 <div class="ms-auto"></div>
             }
-            <Tooltip Title="Back">
-                <Button Color="ButtonColor.Secondary" @onclick="NavigateBack">
-                    <Icon Name="IconName.ArrowLeft"></Icon>
-                </Button>
-            </Tooltip>
+            <Button Color="ButtonColor.Secondary" @onclick="NavigateBack">
+                <Icon Name="IconName.ArrowLeft"></Icon>
+            </Button>
 
             @if (!(_isComicTypeLoaded && _isPublishingStatusLoaded && _isReadStatusLoaded))
             {
@@ -71,11 +67,9 @@
             }
             else
             {
-                <Tooltip Title="Save">
-                    <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">
-                        <Icon Name="IconName.Floppy"></Icon>
-                    </Button>
-                </Tooltip>
+                <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">
+                    <Icon Name="IconName.Floppy"></Icon>
+                </Button>
             }
         </div>
     </div>
