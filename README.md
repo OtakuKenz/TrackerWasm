@@ -1,1 +1,1 @@
-Tracker for webtoon/manga/manhua that I created primarily for personal use.
+Tracker for webtoon/manga/manhua that I created primarily for practice in Blazor.
